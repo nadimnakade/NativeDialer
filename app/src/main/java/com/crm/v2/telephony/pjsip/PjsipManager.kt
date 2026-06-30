@@ -4,11 +4,12 @@ import android.content.Context
 import android.media.AudioManager
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.Flow
+import org.pjsip.pjsua2.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -32,65 +33,52 @@ class PjsipManager @Inject constructor(
     private val _sipState = MutableStateFlow<SipCallState>(SipCallState.Idle)
     val sipState: Flow<SipCallState> = _sipState.asStateFlow()
 
-    private val _events = MutableSharedFlow<SipEvent>(extraBufferCapacity = 20)
+    internal val _events = MutableSharedFlow<SipEvent>(extraBufferCapacity = 20)
     val events: Flow<SipEvent> = _events.asSharedFlow()
 
+    private var ep: Endpoint? = null
+    private var myAccount: MyAccount? = null
+    private var currentCall: MyCall? = null
     private var isInitialized = false
     private var isRegistered = false
 
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
-    private external fun nativeInit(logLevel: Int): Int
-    private external fun nativeDestroy(): Int
-    private external fun nativeRegister(
-        accountId: String,
-        registrarUri: String,
-        username: String,
-        password: String,
-        realm: String,
-        proxyUri: String,
-        iceEnabled: Boolean,
-    ): Int
-    private external fun nativeUnregister(): Int
-    private external fun nativeMakeCall(targetUri: String): Int
-    private external fun nativeHangup(): Int
-    private external fun nativeHold(): Int
-    private external fun nativeResume(): Int
-    private external fun nativeTransfer(targetUri: String): Int
-    private external fun nativeAnswer(): Int
-    private external fun nativeMute(mute: Boolean): Int
-    private external fun nativeSetSpeaker(on: Boolean): Int
-
     fun initialize(logLevel: Int = 3): Boolean {
         if (isInitialized) return true
         return try {
-            val result = nativeInit(logLevel)
-            isInitialized = result == 0
-            if (isInitialized) {
-                Log.d(TAG, "PJSIP initialized successfully")
-                _events.tryEmit(SipEvent.RegistrationProgress)
-            } else {
-                Log.e(TAG, "PJSIP init failed with code: $result")
-                _events.tryEmit(SipEvent.Error("PJSIP init failed: $result"))
+            ep = Endpoint()
+            ep?.libCreate()
+
+            val epCfg = EpConfig()
+            epCfg.logConfig.level = logLevel
+
+            val mediaCfg = epCfg.mediaConfig
+            mediaCfg.clockRate = 16000
+            mediaCfg.sndClockRate = 16000
+            mediaCfg.channelCount = 1
+            mediaCfg.audioFramePtTime = 20
+
+            ep?.libInit(epCfg)
+
+            val transportCfg = TransportConfig()
+            transportCfg.port = 0
+            try {
+                ep?.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_UDP, transportCfg)
+            } catch (_: Exception) {
+                Log.w(TAG, "UDP failed, trying TCP")
+                ep?.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_TCP, transportCfg)
             }
-            isInitialized
+
+            ep?.libStart()
+            isInitialized = true
+            Log.d(TAG, "PJSIP initialized successfully")
+            _events.tryEmit(SipEvent.RegistrationProgress)
+            true
         } catch (e: Exception) {
             Log.e(TAG, "PJSIP init exception", e)
             _events.tryEmit(SipEvent.Error("PJSIP init exception: ${e.message}"))
             false
-        }
-    }
-
-    fun destroy() {
-        if (!isInitialized) return
-        try {
-            nativeUnregister()
-            nativeDestroy()
-            isInitialized = false
-            isRegistered = false
-            Log.d(TAG, "PJSIP destroyed")
-        } catch (e: Exception) {
-            Log.e(TAG, "PJSIP destroy exception", e)
         }
     }
 
@@ -100,25 +88,32 @@ class PjsipManager @Inject constructor(
             return false
         }
         return try {
-            Log.d(TAG, "Registering SIP: ${config.username}@${config.registrarUri}")
-            val result = nativeRegister(
-                accountId = config.accountId,
-                registrarUri = config.registrarUri,
-                username = config.username,
-                password = config.password,
-                realm = config.realm,
-                proxyUri = config.proxyUri,
-                iceEnabled = config.iceEnabled,
-            )
-            if (result == 0) {
-                isRegistered = true
-                Log.d(TAG, "SIP registration sent")
-                true
-            } else {
-                Log.e(TAG, "SIP registration failed: $result")
-                _events.tryEmit(SipEvent.Error("Registration failed: $result"))
-                false
+            myAccount = MyAccount(this)
+
+            val accCfg = AccountConfig()
+            val registrar = config.registrarUri.removePrefix("sip:")
+            accCfg.idUri = "sip:${config.username}@$registrar"
+            accCfg.regConfig.registrarUri = config.registrarUri
+
+            val creds = accCfg.sipConfig.authCreds
+            creds.clear()
+            if (config.username.isNotEmpty()) {
+                creds.add(AuthCredInfo("Digest", "*", config.username, 0, config.password))
             }
+
+            val proxies = accCfg.sipConfig.proxies
+            proxies.clear()
+            if (config.proxyUri.isNotEmpty()) {
+                proxies.add(config.proxyUri)
+            }
+
+            accCfg.natConfig.iceEnabled = config.iceEnabled
+
+            myAccount?.create(accCfg)
+            Thread.sleep(500)
+            isRegistered = true
+            _events.tryEmit(SipEvent.RegistrationSuccess(config.registrarUri))
+            true
         } catch (e: Exception) {
             Log.e(TAG, "SIP registration exception", e)
             _events.tryEmit(SipEvent.Error("Registration exception: ${e.message}"))
@@ -127,13 +122,28 @@ class PjsipManager @Inject constructor(
     }
 
     fun unregister() {
-        if (!isInitialized || !isRegistered) return
         try {
-            nativeUnregister()
+            myAccount?.shutdown()
+            myAccount = null
             isRegistered = false
             Log.d(TAG, "SIP unregistered")
         } catch (e: Exception) {
             Log.e(TAG, "SIP unregister exception", e)
+        }
+    }
+
+    fun destroy() {
+        if (!isInitialized) return
+        try {
+            unregister()
+            currentCall?.delete()
+            currentCall = null
+            ep?.libDestroy()
+            ep = null
+            isInitialized = false
+            Log.d(TAG, "PJSIP destroyed")
+        } catch (e: Exception) {
+            Log.e(TAG, "PJSIP destroy exception", e)
         }
     }
 
@@ -143,14 +153,17 @@ class PjsipManager @Inject constructor(
             return
         }
         _sipState.value = SipCallState.Calling
-        _events.tryEmit(SipEvent.CallOutgoing(callId = System.currentTimeMillis().toString(), targetUri))
+        val callId = currentCall?.info()?.callIdString ?: System.currentTimeMillis().toString()
+        _events.tryEmit(SipEvent.CallOutgoing(callId, targetUri))
         try {
-            val result = nativeMakeCall(targetUri)
-            if (result != 0) {
-                _sipState.value = SipCallState.Idle
-                _events.tryEmit(SipEvent.Error("Make call failed: $result"))
-                Log.e(TAG, "Make call failed: $result")
+            val account = myAccount ?: return
+            if (currentCall != null) {
+                Log.w(TAG, "Call already in progress, hanging up first")
+                hangup()
             }
+            currentCall = MyCall(account, -1, this)
+            val prm = CallOpParam(true)
+            currentCall?.makeCall(targetUri, prm)
         } catch (e: Exception) {
             _sipState.value = SipCallState.Idle
             _events.tryEmit(SipEvent.Error("Make call exception: ${e.message}"))
@@ -160,33 +173,33 @@ class PjsipManager @Inject constructor(
 
     fun answer() {
         try {
-            nativeAnswer()
-            Log.d(TAG, "Call answered")
+            val prm = CallOpParam()
+            prm.statusCode = pjsip_status_code.PJSIP_SC_OK
+            currentCall?.answer(prm)
         } catch (e: Exception) {
             Log.e(TAG, "Answer exception", e)
         }
     }
 
     fun hangup() {
-        val prevState = _sipState.value
         _sipState.value = SipCallState.Disconnecting
         try {
-            nativeHangup()
+            val prm = CallOpParam()
+            prm.statusCode = pjsip_status_code.PJSIP_SC_DECLINE
+            currentCall?.hangup(prm)
+            currentCall = null
             _sipState.value = SipCallState.Idle
-            Log.d(TAG, "Call hung up")
         } catch (e: Exception) {
-            _sipState.value = prevState
+            _sipState.value = SipCallState.Idle
             Log.e(TAG, "Hangup exception", e)
         }
     }
 
     fun hold() {
         try {
-            val result = nativeHold()
-            if (result == 0) {
-                _sipState.value = SipCallState.OnHold
-                Log.d(TAG, "Call on hold")
-            }
+            val prm = CallOpParam(true)
+            currentCall?.setHold(prm)
+            _sipState.value = SipCallState.OnHold
         } catch (e: Exception) {
             Log.e(TAG, "Hold exception", e)
         }
@@ -194,11 +207,8 @@ class PjsipManager @Inject constructor(
 
     fun resume() {
         try {
-            val result = nativeResume()
-            if (result == 0) {
-                _sipState.value = SipCallState.Connected
-                Log.d(TAG, "Call resumed")
-            }
+            currentCall?.reinvite(CallOpParam(true))
+            _sipState.value = SipCallState.Connected
         } catch (e: Exception) {
             Log.e(TAG, "Resume exception", e)
         }
@@ -206,9 +216,10 @@ class PjsipManager @Inject constructor(
 
     fun transfer(targetUri: String) {
         try {
-            nativeTransfer(targetUri)
-            _events.tryEmit(SipEvent.CallTransfer(callId = "current", targetUri))
-            Log.d(TAG, "Call transferred to $targetUri")
+            val transferString = if (targetUri.startsWith("sip:")) "<$targetUri>" else "<sip:$targetUri>"
+            val prm = CallOpParam(true)
+            currentCall?.xfer(transferString, prm)
+            _events.tryEmit(SipEvent.CallTransfer("current", targetUri))
         } catch (e: Exception) {
             Log.e(TAG, "Transfer exception", e)
         }
@@ -216,8 +227,11 @@ class PjsipManager @Inject constructor(
 
     fun mute(muted: Boolean) {
         try {
-            nativeMute(muted)
-            Log.d(TAG, "Mute: $muted")
+            if (muted) audioManager.adjustStreamVolume(
+                AudioManager.STREAM_VOICE_CALL, AudioManager.ADJUST_MUTE, 0
+            ) else audioManager.adjustStreamVolume(
+                AudioManager.STREAM_VOICE_CALL, AudioManager.ADJUST_UNMUTE, 0
+            )
         } catch (e: Exception) {
             Log.e(TAG, "Mute exception", e)
         }
@@ -225,9 +239,7 @@ class PjsipManager @Inject constructor(
 
     fun setSpeaker(on: Boolean) {
         try {
-            nativeSetSpeaker(on)
             audioManager.isSpeakerphoneOn = on
-            Log.d(TAG, "Speaker: $on")
         } catch (e: Exception) {
             Log.e(TAG, "Speaker exception", e)
         }
@@ -235,61 +247,91 @@ class PjsipManager @Inject constructor(
 
     fun setBluetooth(on: Boolean) {
         try {
-            val mode = if (on) AudioManager.MODE_IN_COMMUNICATION else AudioManager.MODE_NORMAL
-            audioManager.mode = mode
-            Log.d(TAG, "Bluetooth: $on")
+            audioManager.mode = if (on) AudioManager.MODE_IN_COMMUNICATION else AudioManager.MODE_NORMAL
         } catch (e: Exception) {
             Log.e(TAG, "Bluetooth exception", e)
         }
     }
 
     fun isRegistered(): Boolean = isRegistered
-
     fun isInitialized(): Boolean = isInitialized
 
-    fun formatSipUri(number: String, server: String): String {
-        return "sip:$number@$server"
+    fun formatSipUri(number: String, server: String) = "sip:$number@$server"
+
+    internal fun onCallState(call: MyCall, ci: CallInfo) {
+        val callId = ci.callIdString ?: call.hashCode().toString()
+        when (ci.state) {
+            pjsip_inv_state.PJSIP_INV_STATE_CALLING -> _sipState.value = SipCallState.Calling
+            pjsip_inv_state.PJSIP_INV_STATE_CONNECTING -> _sipState.value = SipCallState.Connecting
+            pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED -> {
+                _sipState.value = SipCallState.Connected
+                _events.tryEmit(SipEvent.CallConnected(callId))
+            }
+            pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED -> {
+                val reason = ci.connectDuration.sec.toString()
+                _sipState.value = SipCallState.Disconnected(reason)
+                _events.tryEmit(SipEvent.CallDisconnected(callId, 0, reason))
+                currentCall = null
+            }
+            else -> {}
+        }
     }
 
-    fun onNativeEvent(eventType: String, callId: String, statusCode: Int, reason: String) {
-        Log.d(TAG, "Native event: $eventType callId=$callId status=$statusCode reason=$reason")
-        when (eventType) {
-            "on_registration_state" -> {
-                if (statusCode / 100 == 2) {
-                    isRegistered = true
-                    _events.tryEmit(SipEvent.RegistrationSuccess(callId))
-                    Log.d(TAG, "SIP registration successful")
-                } else {
-                    isRegistered = false
-                    _events.tryEmit(SipEvent.RegistrationFailed(callId, statusCode, reason))
-                    Log.e(TAG, "SIP registration failed: $statusCode $reason")
+    fun onRegState(accountId: String, statusCode: Int) {
+        if (statusCode / 100 == 2) {
+            isRegistered = true
+            _events.tryEmit(SipEvent.RegistrationSuccess(accountId))
+        } else {
+            isRegistered = false
+            _events.tryEmit(SipEvent.RegistrationFailed(accountId, statusCode, ""))
+        }
+    }
+}
+
+internal class MyAccount(
+    private val manager: PjsipManager,
+) : Account() {
+    override fun onRegState(prm: OnRegStateParam) {
+        Log.d("MyAccount", "Reg state: ${prm.code} ${prm.reason}")
+        manager.onRegState(prm.accountId, prm.code)
+    }
+
+    override fun onIncomingCall(prm: OnIncomingCallParam) {
+        try {
+            val call = MyCall(this, prm.callId, manager)
+            val ci = call.info()
+            Log.d("MyAccount", "Incoming call: ${ci.remoteUri}")
+            manager.onCallState(call, ci)
+        } catch (e: Exception) {
+            Log.e("MyAccount", "Incoming call exception", e)
+        }
+    }
+}
+
+internal class MyCall(
+    account: MyAccount,
+    callId: Int,
+    private val manager: PjsipManager,
+) : Call(account, callId) {
+    override fun onCallState(prm: OnCallStateParam) {
+        try {
+            manager.onCallState(this, info())
+        } catch (e: Exception) {
+            Log.e("MyCall", "onCallState exception", e)
+        }
+    }
+
+    override fun onCallMediaState(prm: OnCallMediaStateParam) {
+        try {
+            val ci = info()
+            for (i in 0 until ci.media.size().toInt()) {
+                if (ci.media[i].type == pjmedia_type.PJMEDIA_TYPE_AUDIO) {
+                    manager._events.tryEmit(SipEvent.CallMediaState(ci.callIdString, true))
+                    break
                 }
             }
-            "on_incoming_call" -> {
-                _sipState.value = SipCallState.Ringing
-                _events.tryEmit(SipEvent.CallIncoming(callId, reason, ""))
-            }
-            "on_call_state" -> {
-                when (statusCode) {
-                    180, 183 -> {
-                        _sipState.value = SipCallState.Ringing
-                    }
-                    200 -> {
-                        _sipState.value = SipCallState.Connected
-                        _events.tryEmit(SipEvent.CallConnected(callId))
-                    }
-                    in 400..699 -> {
-                        _sipState.value = SipCallState.Disconnected(reason)
-                        _events.tryEmit(SipEvent.CallDisconnected(callId, statusCode, reason))
-                    }
-                    else -> {
-                        Log.d(TAG, "Call state: $statusCode $reason")
-                    }
-                }
-            }
-            "on_call_media_state" -> {
-                _events.tryEmit(SipEvent.CallMediaState(callId, statusCode == 0))
-            }
+        } catch (e: Exception) {
+            Log.e("MyCall", "onCallMediaState exception", e)
         }
     }
 }

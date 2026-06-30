@@ -1,0 +1,43 @@
+name: Build PJSIP for Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ pjsip-build ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Install SWIG
+        run: sudo apt-get update && sudo apt-get install -y swig wget
+
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r27c
+
+      - name: Build PJSIP
+        run: bash scripts/build-pjsip.sh
+        env:
+          ANDROID_HOME: ${{ github.workspace }}/ndk
+
+      - name: Upload native libs
+        uses: actions/upload-artifact@v4
+        with:
+          name: pjsip-android-libs
+          path: app/src/main/jniLibs/
+
+      - name: Upload Java SDK
+        uses: actions/upload-artifact@v4
+        with:
+          name: pjsua2-jar
+          path: app/libs/pjsua2.jar

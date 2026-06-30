@@ -68,13 +68,12 @@ android {
 
     ndkVersion = "27.1.12297006"
 
-    // Uncomment below after running scripts/build-pjsip.sh to build native libraries
-    // externalNativeBuild {
-    //     cmake {
-    //         path = file("src/main/cpp/CMakeLists.txt")
-    //         version = "3.22.1"
-    //     }
-    // }
+    // PJSIP: native libs loaded from jniLibs/ — run scripts/build-pjsip.sh first
+    sourceSets {
+        getByName("main") {
+            jniLibs.srcDirs("src/main/jniLibs")
+        }
+    }
 
     kotlinOptions {
         jvmTarget = "17"
@@ -101,6 +100,9 @@ android {
 }
 
 dependencies {
+    // PJSIP Java SDK (placed in libs/ by scripts/build-pjsip.sh)
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+
     // Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
