@@ -1,0 +1,7 @@
+[
+{
+  "directory": "D:/Git_Repos/Dialer/Frontend/app/.cxx/Debug/3j604r4j/arm64-v8a",
+  "command": "C:\\Users\\Nadeem\\AppData\\Local\\Android\\Sdk\\ndk\\27.1.12297006\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang++.exe --target=aarch64-none-linux-android26 --sysroot=C:/Users/Nadeem/AppData/Local/Android/Sdk/ndk/27.1.12297006/toolchains/llvm/prebuilt/windows-x86_64/sysroot -Dpjsip_bridge_EXPORTS -ID:/Git_Repos/Dialer/Frontend/app/src/main/cpp/../../../external/pjsip/pjlib/include -ID:/Git_Repos/Dialer/Frontend/app/src/main/cpp/../../../external/pjsip/pjlib-util/include -ID:/Git_Repos/Dialer/Frontend/app/src/main/cpp/../../../external/pjsip/pjnath/include -ID:/Git_Repos/Dialer/Frontend/app/src/main/cpp/../../../external/pjsip/pjmedia/include -ID:/Git_Repos/Dialer/Frontend/app/src/main/cpp/../../../external/pjsip/pjsip/include -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info  -fPIC -o CMakeFiles\\pjsip_bridge.dir\\pjsip_bridge.cpp.o -c D:\\Git_Repos\\Dialer\\Frontend\\app\\src\\main\\cpp\\pjsip_bridge.cpp",
+  "file": "D:\\Git_Repos\\Dialer\\Frontend\\app\\src\\main\\cpp\\pjsip_bridge.cpp"
+}
+]

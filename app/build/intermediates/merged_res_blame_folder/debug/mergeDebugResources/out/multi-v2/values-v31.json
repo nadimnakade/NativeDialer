@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.crm.v2.app-mergeDebugResources-92:/values-v31/values-v31.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Nadeem\\.gradle\\caches\\8.9\\transforms\\e4aa776acfbb21dcbf87a2e26234deb9\\transformed\\core-splashscreen-1.0.1\\res\\values-v31\\values-v31.xml",
+                    "from": {
+                        "startLines": "2,9",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,473",
+                        "endLines": "8,13",
+                        "endColumns": "12,12",
+                        "endOffsets": "468,697"
+                    }
+                }
+            ]
+        }
+    ]
+}

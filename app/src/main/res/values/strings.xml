@@ -1,0 +1,125 @@
+<resources>
+    <string name="app_name">CRM</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_leads">Leads</string>
+    <string name="nav_dialer">Dialer</string>
+    <string name="nav_contacts">Contacts</string>
+    <string name="nav_reports">Reports</string>
+
+    <!-- Auth -->
+    <string name="login_title">Welcome Back</string>
+    <string name="login_subtitle">Sign in to your CRM account</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
+    <string name="action_login">Sign In</string>
+    <string name="action_logout">Logout</string>
+    <string name="error_invalid_credentials">Invalid username or password</string>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_unknown">An unexpected error occurred</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Dashboard</string>
+    <string name="stat_rank">Rank</string>
+    <string name="stat_points">Points</string>
+    <string name="stat_disbursed">Disbursed</string>
+    <string name="stat_ftd">Client Connected</string>
+    <string name="stat_duration">Duration</string>
+    <string name="stat_daily_leads">Daily Leads</string>
+    <string name="stat_monthly_leads">Monthly Leads</string>
+    <string name="stat_login_count">Login Count</string>
+    <string name="stat_login_amt">Login Amount</string>
+    <string name="stat_downtime">Down Time</string>
+    <string name="stat_connectivity">Connectivity</string>
+
+    <!-- Dialer -->
+    <string name="dialer_auto">Auto Dialer</string>
+    <string name="dialer_manual">Manual Dialer</string>
+    <string name="action_start_dialing">Start Dialing</string>
+    <string name="action_stop_dialing">Stop Dialing</string>
+    <string name="hint_phone_number">Enter phone number</string>
+    <string name="action_call">Call</string>
+    <string name="action_hangup">Hang Up</string>
+    <string name="action_mute">Mute</string>
+    <string name="action_speaker">Speaker</string>
+    <string name="action_hold">Hold</string>
+    <string name="action_resume">Resume</string>
+    <string name="action_bluetooth">Bluetooth</string>
+    <string name="action_transfer">Transfer</string>
+    <string name="action_conference">Conference</string>
+
+    <!-- Update Status -->
+    <string name="update_status_title">Update Call Status</string>
+    <string name="status_not_interested">Not Interested</string>
+    <string name="status_follow_up">Follow Up</string>
+    <string name="status_sameday_follow_up">SameDay Follow Up</string>
+    <string name="status_ringing">Ringing</string>
+    <string name="status_not_contactable">Not Contactable</string>
+    <string name="status_dnd">DND</string>
+    <string name="status_lead">Lead</string>
+    <string name="status_wrong_no">Wrong No.</string>
+    <string name="status_not_doable">Not Doable</string>
+    <string name="hint_remarks">Remarks</string>
+    <string name="hint_whatsapp">WhatsApp Message</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+
+    <!-- Leads -->
+    <string name="leads_title">Leads</string>
+    <string name="lead_detail_title">Lead Detail</string>
+    <string name="add_lead_title">Add Lead</string>
+    <string name="hint_name">Name</string>
+    <string name="hint_mobile">Mobile Number</string>
+    <string name="hint_product">Product</string>
+    <string name="hint_caller">Caller</string>
+    <string name="hint_remarks_lead">Remarks</string>
+    <string name="action_search">Search</string>
+    <string name="action_filter">Filter</string>
+    <string name="empty_leads">No leads found</string>
+
+    <!-- Follow-up -->
+    <string name="followup_title">Follow-ups</string>
+    <string name="sameday_title">Same Day Follow-ups</string>
+    <string name="onemin_title">+1 Minute Calls</string>
+    <string name="ringing_title">Ringing Calls</string>
+
+    <!-- Reports -->
+    <string name="reports_title">Reports</string>
+    <string name="performance_title">My Performance</string>
+    <string name="ranking_title">Rankings</string>
+    <string name="attendance_title">Attendance</string>
+    <string name="disbursal_title">Disbursal Detail</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="profile_title">Profile</string>
+    <string name="telephony_settings">Telephony Settings</string>
+    <string name="app_preferences">App Preferences</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="dark_mode_system">Follow System</string>
+
+    <!-- Notifications -->
+    <string name="notifications_title">Notifications</string>
+    <string name="notification_channel_calls">Calls</string>
+    <string name="notification_channel_followups">Follow-up Reminders</string>
+    <string name="notification_channel_sync">Background Sync</string>
+    <string name="notification_channel_foreground">Active Call</string>
+
+    <!-- Documents -->
+    <string name="documents_title">Document Vault</string>
+    <string name="action_upload">Upload</string>
+    <string name="action_download">Download</string>
+
+    <!-- Common -->
+    <string name="action_refresh">Refresh</string>
+    <string name="action_retry">Retry</string>
+    <string name="loading">Loading...</string>
+    <string name="empty_state">Nothing here yet</string>
+    <string name="error_state">Something went wrong</string>
+    <string name="action_yes">Yes</string>
+    <string name="action_no">No</string>
+    <string name="action_ok">OK</string>
+    <string name="action_back">Back</string>
+    <string name="action_done">Done</string>
+</resources>

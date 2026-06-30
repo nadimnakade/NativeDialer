@@ -1,0 +1,6 @@
+-keep,allowobfuscation,allowshrinking class com.crm.v2.presentation.ui.agentstatus.AgentStatusViewModel
+-keep,allowobfuscation,allowshrinking class com.crm.v2.presentation.ui.agentstatus.AgentStatusViewModel
+-keep,allowobfuscation,allowshrinking class com.crm.v2.presentation.ui.auth.LoginViewModel
+-keep,allowobfuscation,allowshrinking class com.crm.v2.presentation.ui.auth.LoginViewModel
+-keep,allowobfuscation,allowshrinking class com.crm.v2.presentation.ui.callhistory.CallHistoryViewModel
+-keep,allowobfuscation,allowshrinking class com.crm.v2.presentation.ui.callhistory.CallHistoryViewModel

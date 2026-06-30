@@ -1,0 +1,39 @@
+package com.crm.v2.presentation.ui.dailyloginlist
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.crm.v2.common.result.Resource
+import com.crm.v2.data.datastore.AuthDataStore
+import com.crm.v2.domain.model.DailyLogin
+import com.crm.v2.domain.repository.DailyLoginRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+data class DailyLoginListUiState(
+    val entries: List<DailyLogin> = emptyList(),
+    val isLoading: Boolean = false,
+)
+
+@HiltViewModel
+class DailyLoginListViewModel @Inject constructor(
+    private val dailyLoginRepository: DailyLoginRepository,
+    private val authDataStore: AuthDataStore,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(DailyLoginListUiState())
+    val uiState: StateFlow<DailyLoginListUiState> = _uiState.asStateFlow()
+
+    fun load() {
+        val userKey = authDataStore.userKey ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            when (val result = dailyLoginRepository.getDailyLoginList(userKey)) {
+                is Resource.Success -> _uiState.update { it.copy(entries = result.data, isLoading = false) }
+                is Resource.Error -> _uiState.update { it.copy(isLoading = false) }
+                else -> {}
+            }
+        }
+    }
+}
