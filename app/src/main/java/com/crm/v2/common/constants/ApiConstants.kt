@@ -74,4 +74,11 @@ object ApiConstants {
         const val EXTENSION_NUMBER = "701"
         const val EXTENSION_PASSWORD = "b147a109a38e4d3137e7442e54dd0fd0"
     }
+
+    object Sip {
+        const val SERVER = "sip2.cloud-connect.in "
+        const val PORT = "7065"
+        const val USERNAME = "701"
+        const val PASSWORD = "Tejas@002"
+    }
 }

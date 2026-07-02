@@ -1,6 +1,6 @@
 package com.crm.v2.common.constants;
 
-@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000 \n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0002\n\u0002\u0010\u000e\n\u0000\n\u0002\u0010\t\n\u0000\n\u0002\u0010\b\n\u0002\b\f\b\u00c7\u0002\u0018\u00002\u00020\u0001:\t\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002R\u000e\u0010\u0003\u001a\u00020\u0004X\u0086T\u00a2\u0006\u0002\n\u0000R\u000e\u0010\u0005\u001a\u00020\u0006X\u0086T\u00a2\u0006\u0002\n\u0000R\u000e\u0010\u0007\u001a\u00020\bX\u0086T\u00a2\u0006\u0002\n\u0000R\u000e\u0010\t\u001a\u00020\u0006X\u0086T\u00a2\u0006\u0002\n\u0000R\u000e\u0010\n\u001a\u00020\u0006X\u0086T\u00a2\u0006\u0002\n\u0000\u00a8\u0006\u0014"}, d2 = {"Lcom/crm/v2/common/constants/ApiConstants;", "", "()V", "BASE_URL", "", "CONNECT_TIMEOUT_SECONDS", "", "MAX_RETRIES", "", "READ_TIMEOUT_SECONDS", "WRITE_TIMEOUT_SECONDS", "Auth", "CallLog", "CloudConnect", "DailyLogin", "Dialer", "Documents", "Email", "Pdf", "Pickup", "app_debug"})
+@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000 \n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0002\n\u0002\u0010\u000e\n\u0000\n\u0002\u0010\t\n\u0000\n\u0002\u0010\b\n\u0002\b\r\b\u00c7\u0002\u0018\u00002\u00020\u0001:\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002R\u000e\u0010\u0003\u001a\u00020\u0004X\u0086T\u00a2\u0006\u0002\n\u0000R\u000e\u0010\u0005\u001a\u00020\u0006X\u0086T\u00a2\u0006\u0002\n\u0000R\u000e\u0010\u0007\u001a\u00020\bX\u0086T\u00a2\u0006\u0002\n\u0000R\u000e\u0010\t\u001a\u00020\u0006X\u0086T\u00a2\u0006\u0002\n\u0000R\u000e\u0010\n\u001a\u00020\u0006X\u0086T\u00a2\u0006\u0002\n\u0000\u00a8\u0006\u0015"}, d2 = {"Lcom/crm/v2/common/constants/ApiConstants;", "", "()V", "BASE_URL", "", "CONNECT_TIMEOUT_SECONDS", "", "MAX_RETRIES", "", "READ_TIMEOUT_SECONDS", "WRITE_TIMEOUT_SECONDS", "Auth", "CallLog", "CloudConnect", "DailyLogin", "Dialer", "Documents", "Email", "Pdf", "Pickup", "Sip", "app_debug"})
 public final class ApiConstants {
     @org.jetbrains.annotations.NotNull()
     public static final java.lang.String BASE_URL = "https://1up.co.in/DialerAPI/api/";
@@ -183,6 +183,24 @@ public final class ApiConstants {
         public static final com.crm.v2.common.constants.ApiConstants.Pickup INSTANCE = null;
         
         private Pickup() {
+            super();
+        }
+    }
+    
+    @kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\u0014\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0002\n\u0002\u0010\u000e\n\u0002\b\u0004\b\u00c7\u0002\u0018\u00002\u00020\u0001B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002R\u000e\u0010\u0003\u001a\u00020\u0004X\u0086T\u00a2\u0006\u0002\n\u0000R\u000e\u0010\u0005\u001a\u00020\u0004X\u0086T\u00a2\u0006\u0002\n\u0000R\u000e\u0010\u0006\u001a\u00020\u0004X\u0086T\u00a2\u0006\u0002\n\u0000R\u000e\u0010\u0007\u001a\u00020\u0004X\u0086T\u00a2\u0006\u0002\n\u0000\u00a8\u0006\b"}, d2 = {"Lcom/crm/v2/common/constants/ApiConstants$Sip;", "", "()V", "PASSWORD", "", "PORT", "SERVER", "USERNAME", "app_debug"})
+    public static final class Sip {
+        @org.jetbrains.annotations.NotNull()
+        public static final java.lang.String SERVER = "sip2.cloud-connect.in ";
+        @org.jetbrains.annotations.NotNull()
+        public static final java.lang.String PORT = "7065";
+        @org.jetbrains.annotations.NotNull()
+        public static final java.lang.String USERNAME = "701";
+        @org.jetbrains.annotations.NotNull()
+        public static final java.lang.String PASSWORD = "Tejas@002";
+        @org.jetbrains.annotations.NotNull()
+        public static final com.crm.v2.common.constants.ApiConstants.Sip INSTANCE = null;
+        
+        private Sip() {
             super();
         }
     }

@@ -1,14 +1,20 @@
 package com.crm.v2.telephony.pjsip
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.util.Log
+import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import org.pjsip.pjsua2.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,6 +28,10 @@ class PjsipManager @Inject constructor(
 
         init {
             try {
+                val deps = listOf("speex", "g7221codec", "pjmedia-audiodev", "pjmedia-codec")
+                deps.forEach { name ->
+                    try { System.loadLibrary(name) } catch (_: UnsatisfiedLinkError) {}
+                }
                 System.loadLibrary("pjsua2")
                 Log.d(TAG, "PJSIP native library loaded")
             } catch (e: UnsatisfiedLinkError) {
@@ -41,23 +51,45 @@ class PjsipManager @Inject constructor(
     private var currentCall: MyCall? = null
     private var isInitialized = false
     private var isRegistered = false
+    private var pendingRegistration: SipAccountConfig? = null
 
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
+    fun onPermissionGranted() {
+        if (!isInitialized) {
+            if (initialize()) {
+                val pending = pendingRegistration
+                if (pending != null) {
+                    pendingRegistration = null
+                    kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                        register(pending)
+                    }
+                }
+            }
+        }
+    }
+
     fun initialize(logLevel: Int = 3): Boolean {
         if (isInitialized) return true
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.w(TAG, "RECORD_AUDIO permission not granted, deferring PJSIP init")
+            _events.tryEmit(SipEvent.Error("Microphone permission required for calls"))
+            return false
+        }
         return try {
             ep = Endpoint()
             ep?.libCreate()
 
             val epCfg = EpConfig()
-            epCfg.logConfig.level = logLevel
+            epCfg.logConfig.level = logLevel.toLong()
 
-            val mediaCfg = epCfg.mediaConfig
-            mediaCfg.clockRate = 16000
-            mediaCfg.sndClockRate = 16000
-            mediaCfg.channelCount = 1
-            mediaCfg.audioFramePtTime = 20
+            val mediaCfg = epCfg.medConfig
+            mediaCfg.clockRate = 16000L
+            mediaCfg.sndClockRate = 16000L
+            mediaCfg.channelCount = 1L
+            mediaCfg.audioFramePtime = 20L
 
             ep?.libInit(epCfg)
 
@@ -71,6 +103,14 @@ class PjsipManager @Inject constructor(
             }
 
             ep?.libStart()
+
+            try {
+                val devCount = ep?.audDevManager()?.devCount ?: 0
+                Log.d(TAG, "Audio devices found: $devCount")
+            } catch (e: Exception) {
+                Log.w(TAG, "Audio dev manager init failed", e)
+            }
+
             isInitialized = true
             Log.d(TAG, "PJSIP initialized successfully")
             _events.tryEmit(SipEvent.RegistrationProgress)
@@ -84,7 +124,9 @@ class PjsipManager @Inject constructor(
 
     fun register(config: SipAccountConfig): Boolean {
         if (!isInitialized) {
-            Log.e(TAG, "Cannot register: PJSIP not initialized")
+            Log.w(TAG, "Cannot register: PJSIP not initialized, queuing for retry")
+            pendingRegistration = config
+            _events.tryEmit(SipEvent.RegistrationProgress)
             return false
         }
         return try {
@@ -153,7 +195,7 @@ class PjsipManager @Inject constructor(
             return
         }
         _sipState.value = SipCallState.Calling
-        val callId = currentCall?.info()?.callIdString ?: System.currentTimeMillis().toString()
+        val callId = try { currentCall?.getInfo()?.callIdString } catch (_: Exception) { null } ?: System.currentTimeMillis().toString()
         _events.tryEmit(SipEvent.CallOutgoing(callId, targetUri))
         try {
             val account = myAccount ?: return
@@ -268,7 +310,7 @@ class PjsipManager @Inject constructor(
                 _events.tryEmit(SipEvent.CallConnected(callId))
             }
             pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED -> {
-                val reason = ci.connectDuration.sec.toString()
+                val reason = try { ci.connectDuration.sec.toString() } catch (_: Exception) { "0" }
                 _sipState.value = SipCallState.Disconnected(reason)
                 _events.tryEmit(SipEvent.CallDisconnected(callId, 0, reason))
                 currentCall = null
@@ -293,14 +335,14 @@ internal class MyAccount(
 ) : Account() {
     override fun onRegState(prm: OnRegStateParam) {
         Log.d("MyAccount", "Reg state: ${prm.code} ${prm.reason}")
-        manager.onRegState(prm.accountId, prm.code)
+        manager.onRegState(id.toString(), prm.code)
     }
 
     override fun onIncomingCall(prm: OnIncomingCallParam) {
         try {
             val call = MyCall(this, prm.callId, manager)
-            val ci = call.info()
-            Log.d("MyAccount", "Incoming call: ${ci.remoteUri}")
+            val ci = call.getInfo()
+            Log.d("MyAccount", "Incoming call: ${ci.getRemoteUri()}")
             manager.onCallState(call, ci)
         } catch (e: Exception) {
             Log.e("MyAccount", "Incoming call exception", e)
@@ -315,7 +357,10 @@ internal class MyCall(
 ) : Call(account, callId) {
     override fun onCallState(prm: OnCallStateParam) {
         try {
-            manager.onCallState(this, info())
+            val callInfo = try { getInfo() } catch (_: Exception) { null }
+            if (callInfo != null) {
+                manager.onCallState(this, callInfo)
+            }
         } catch (e: Exception) {
             Log.e("MyCall", "onCallState exception", e)
         }
@@ -323,9 +368,10 @@ internal class MyCall(
 
     override fun onCallMediaState(prm: OnCallMediaStateParam) {
         try {
-            val ci = info()
-            for (i in 0 until ci.media.size().toInt()) {
-                if (ci.media[i].type == pjmedia_type.PJMEDIA_TYPE_AUDIO) {
+            val ci = try { getInfo() } catch (_: Exception) { null } ?: return
+            val media = ci.media
+            for (i in 0 until media.size) {
+                if (media[i].type == pjmedia_type.PJMEDIA_TYPE_AUDIO) {
                     manager._events.tryEmit(SipEvent.CallMediaState(ci.callIdString, true))
                     break
                 }

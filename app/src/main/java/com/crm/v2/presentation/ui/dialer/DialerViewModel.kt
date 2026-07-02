@@ -108,9 +108,10 @@ class DialerViewModel @Inject constructor(
         viewModelScope.launch {
             telephonyManager.register(
                 TelephonyConfig(
-                    cloudTokenId = com.crm.v2.common.constants.ApiConstants.CloudConnect.TOKEN_ID,
-                    cloudExtensionNumber = com.crm.v2.common.constants.ApiConstants.CloudConnect.EXTENSION_NUMBER,
-                    cloudExtensionPassword = com.crm.v2.common.constants.ApiConstants.CloudConnect.EXTENSION_PASSWORD,
+                    providerType = com.crm.v2.telephony.ProviderType.PJSIP,
+                    sipUsername = com.crm.v2.common.constants.ApiConstants.Sip.USERNAME,
+                    sipPassword = com.crm.v2.common.constants.ApiConstants.Sip.PASSWORD,
+                    sipServer = "${com.crm.v2.common.constants.ApiConstants.Sip.SERVER}:${com.crm.v2.common.constants.ApiConstants.Sip.PORT}",
                 )
             )
             dialerRepository.startAutoDial(userKey).collect { queue ->
@@ -148,9 +149,10 @@ class DialerViewModel @Inject constructor(
             try {
                 telephonyManager.register(
                     TelephonyConfig(
-                        cloudTokenId = com.crm.v2.common.constants.ApiConstants.CloudConnect.TOKEN_ID,
-                        cloudExtensionNumber = com.crm.v2.common.constants.ApiConstants.CloudConnect.EXTENSION_NUMBER,
-                        cloudExtensionPassword = com.crm.v2.common.constants.ApiConstants.CloudConnect.EXTENSION_PASSWORD,
+                        providerType = com.crm.v2.telephony.ProviderType.PJSIP,
+                        sipUsername = com.crm.v2.common.constants.ApiConstants.Sip.USERNAME,
+                        sipPassword = com.crm.v2.common.constants.ApiConstants.Sip.PASSWORD,
+                        sipServer = "${com.crm.v2.common.constants.ApiConstants.Sip.SERVER}:${com.crm.v2.common.constants.ApiConstants.Sip.PORT}",
                     )
                 )
                 telephonyManager.call(trimmed)

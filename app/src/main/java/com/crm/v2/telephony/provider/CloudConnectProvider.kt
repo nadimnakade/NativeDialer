@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -93,34 +95,36 @@ class CloudConnectProvider @Inject constructor(
                 .post(jsonBody.toRequestBody("application/json".toMediaType()))
                 .build()
 
-            client.newCall(request).execute().use { response ->
-                val bodyString = response.body?.string() ?: ""
-                Log.d(TAG, "CloudConnect response: ${response.code} - $bodyString")
+            withContext(Dispatchers.IO) {
+                client.newCall(request).execute().use { response ->
+                    val bodyString = response.body?.string() ?: ""
+                    Log.d(TAG, "CloudConnect response: ${response.code} - $bodyString")
 
-                if (response.isSuccessful) {
-                    val jsonResponse = JSONObject(bodyString)
-                    val status = jsonResponse.optString("status", "")
-                    currentUniqueToken = jsonResponse.optString("unique_token", "")
+                    if (response.isSuccessful) {
+                        val jsonResponse = JSONObject(bodyString)
+                        val status = jsonResponse.optString("status", "")
+                        currentUniqueToken = jsonResponse.optString("unique_token", "")
 
-                    if (status.equals("SUCCESS", ignoreCase = true)) {
-                        _callState.value = CallState.Ringing
-                        _events.tryEmit(TelephonyEvent.CallConnected(currentUniqueToken))
-                        Log.d(TAG, "Call initiated successfully. unique_token=$currentUniqueToken")
+                        if (status.equals("SUCCESS", ignoreCase = true)) {
+                            _callState.value = CallState.Ringing
+                            _events.tryEmit(TelephonyEvent.CallConnected(currentUniqueToken))
+                            Log.d(TAG, "Call initiated successfully. unique_token=$currentUniqueToken")
+                        } else {
+                            _callState.value = CallState.Error
+                            val message = jsonResponse.optString("message", "Unknown error")
+                            _events.tryEmit(TelephonyEvent.Error("Cloud call failed: $message"))
+                            Log.e(TAG, "Call failed: $status - $message")
+                        }
                     } else {
                         _callState.value = CallState.Error
-                        val message = jsonResponse.optString("message", "Unknown error")
-                        _events.tryEmit(TelephonyEvent.Error("Cloud call failed: $message"))
-                        Log.e(TAG, "Call failed: $status - $message")
+                        _events.tryEmit(TelephonyEvent.Error("Cloud API error: ${response.code}"))
+                        Log.e(TAG, "API error: ${response.code}")
                     }
-                } else {
-                    _callState.value = CallState.Error
-                    _events.tryEmit(TelephonyEvent.Error("Cloud API error: ${response.code}"))
-                    Log.e(TAG, "API error: ${response.code}")
                 }
             }
         } catch (e: Exception) {
             _callState.value = CallState.Error
-            _events.tryEmit(TelephonyEvent.Error(e.message ?: "Cloud call failed"))
+            _events.tryEmit(TelephonyEvent.Error("Cloud call failed: ${e::class.simpleName}: ${e.message}"))
             Log.e(TAG, "Call exception", e)
         }
     }
@@ -199,18 +203,20 @@ class CloudConnectProvider @Inject constructor(
                 .post(jsonBody.toRequestBody("application/json".toMediaType()))
                 .build()
 
-            client.newCall(request).execute().use { response ->
-                val bodyString = response.body?.string() ?: ""
-                Log.d(TAG, "Call log response: ${response.code} - $bodyString")
+            withContext(Dispatchers.IO) {
+                client.newCall(request).execute().use { response ->
+                    val bodyString = response.body?.string() ?: ""
+                    Log.d(TAG, "Call log response: ${response.code} - $bodyString")
 
-                if (response.isSuccessful) {
-                    val logResponse = json.decodeFromString(
-                        com.crm.v2.data.network.dto.cloudconnect.CallLogResponse.serializer(),
-                        bodyString
-                    )
-                    Result.success(logResponse.data)
-                } else {
-                    Result.failure(Exception("API error: ${response.code}"))
+                    if (response.isSuccessful) {
+                        val logResponse = json.decodeFromString(
+                            com.crm.v2.data.network.dto.cloudconnect.CallLogResponse.serializer(),
+                            bodyString
+                        )
+                        Result.success(logResponse.data)
+                    } else {
+                        Result.failure(Exception("API error: ${response.code}"))
+                    }
                 }
             }
         } catch (e: Exception) {

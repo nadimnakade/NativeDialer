@@ -48,7 +48,7 @@ import com.crm.v2.presentation.ui.whistleblower.WhistleblowerScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NavGraph() {
+fun NavGraph(startDestination: String = Screen.Login.route) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -138,7 +138,7 @@ fun NavGraph() {
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Login.route,
+            startDestination = startDestination,
             modifier = Modifier.padding(paddingValues),
         ) {
             composable(Screen.Login.route) {
