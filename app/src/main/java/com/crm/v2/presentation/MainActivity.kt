@@ -37,7 +37,6 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.crm.v2.data.datastore.AuthDataStore
 import com.crm.v2.presentation.navigation.NavGraph
 import com.crm.v2.presentation.navigation.Screen
-import com.crm.v2.telephony.pjsip.PjsipManager
 import com.crm.v2.ui.theme.CrmTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -46,7 +45,6 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject lateinit var authDataStore: AuthDataStore
-    @Inject lateinit var pjsipManager: PjsipManager
 
     private var permissionTick by mutableIntStateOf(0)
 
@@ -74,7 +72,6 @@ class MainActivity : ComponentActivity() {
         criticalRequestInFlight = false
         permissionTick++
         if (results.values.all { it }) {
-            pjsipManager.onPermissionGranted()
             launchOptionalPermissions()
         } else {
             Log.w(TAG, "Critical permissions denied: ${results.filter { !it.value }.keys}")
@@ -130,9 +127,6 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         permissionTick++
-        if (criticalGranted()) {
-            pjsipManager.onPermissionGranted()
-        }
     }
 
     private fun criticalGranted(): Boolean = criticalPermissions.all {
@@ -149,7 +143,6 @@ class MainActivity : ComponentActivity() {
             criticalLauncher.launch(missing.toTypedArray())
         } else {
             permissionTick++
-            pjsipManager.onPermissionGranted()
             launchOptionalPermissions()
         }
     }

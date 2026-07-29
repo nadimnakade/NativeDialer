@@ -152,7 +152,7 @@ private fun Lead.toEntity() = LeadEntity(
 )
 
 private fun com.crm.v2.data.network.dto.pickup.DialerDataDto.toDialerDomain() = com.crm.v2.domain.model.DialerRecord(
-    key = key ?: "",
+    key = key?.toString() ?: "",
     clientName = clientName ?: "",
     contact = contact ?: "",
     product = product,

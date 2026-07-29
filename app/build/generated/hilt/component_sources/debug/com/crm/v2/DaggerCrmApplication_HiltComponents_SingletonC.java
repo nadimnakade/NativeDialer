@@ -148,8 +148,9 @@ import com.crm.v2.services.ForegroundCallService;
 import com.crm.v2.services.ForegroundCallService_MembersInjector;
 import com.crm.v2.services.SyncWorker;
 import com.crm.v2.services.SyncWorker_AssistedFactory;
-import com.crm.v2.telephony.pjsip.PjsipManager;
-import com.crm.v2.telephony.pjsip.PjsipTelephonyProvider;
+import com.crm.v2.telephony.TestCallActivity;
+import com.crm.v2.telephony.TestCallActivity_MembersInjector;
+import com.crm.v2.telephony.provider.PjsipTelephonyProvider;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -510,6 +511,11 @@ public final class DaggerCrmApplication_HiltComponents_SingletonC {
     }
 
     @Override
+    public void injectTestCallActivity(TestCallActivity testCallActivity) {
+      injectTestCallActivity2(testCallActivity);
+    }
+
+    @Override
     public DefaultViewModelFactories.InternalFactoryFactory getHiltInternalFactoryFactory() {
       return DefaultViewModelFactories_InternalFactoryFactory_Factory.newInstance(getViewModelKeys(), new ViewModelCBuilder(singletonCImpl, activityRetainedCImpl));
     }
@@ -537,8 +543,14 @@ public final class DaggerCrmApplication_HiltComponents_SingletonC {
     @CanIgnoreReturnValue
     private MainActivity injectMainActivity2(MainActivity instance) {
       MainActivity_MembersInjector.injectAuthDataStore(instance, singletonCImpl.provideAuthDataStoreProvider.get());
-      MainActivity_MembersInjector.injectPjsipManager(instance, singletonCImpl.pjsipManagerProvider.get());
       return instance;
+    }
+
+    @CanIgnoreReturnValue
+    private TestCallActivity injectTestCallActivity2(TestCallActivity instance2) {
+      TestCallActivity_MembersInjector.injectTelephonyProvider(instance2, singletonCImpl.pjsipTelephonyProvider.get());
+      TestCallActivity_MembersInjector.injectAuthDataStore(instance2, singletonCImpl.provideAuthDataStoreProvider.get());
+      return instance2;
     }
   }
 
@@ -702,7 +714,7 @@ public final class DaggerCrmApplication_HiltComponents_SingletonC {
           return (T) new DashboardViewModel(singletonCImpl.reportingRepositoryImplProvider.get(), singletonCImpl.provideAuthDataStoreProvider.get());
 
           case 8: // com.crm.v2.presentation.ui.dialer.DialerViewModel 
-          return (T) new DialerViewModel(singletonCImpl.dialerRepositoryImplProvider.get(), singletonCImpl.pjsipTelephonyProvider.get(), singletonCImpl.provideAuthDataStoreProvider.get());
+          return (T) new DialerViewModel(singletonCImpl.dialerRepositoryImplProvider.get(), singletonCImpl.leadRepositoryImplProvider.get(), singletonCImpl.contactRepositoryImplProvider.get(), singletonCImpl.pjsipTelephonyProvider.get(), singletonCImpl.provideAuthDataStoreProvider.get());
 
           case 9: // com.crm.v2.presentation.ui.documentupload.DocumentUploadViewModel 
           return (T) new DocumentUploadViewModel(singletonCImpl.documentRepositoryImplProvider.get(), singletonCImpl.provideAuthDataStoreProvider.get(), ApplicationContextModule_ProvideApplicationFactory.provideApplication(singletonCImpl.applicationContextModule));
@@ -867,7 +879,7 @@ public final class DaggerCrmApplication_HiltComponents_SingletonC {
 
     private Provider<SyncWorker_AssistedFactory> syncWorker_AssistedFactoryProvider;
 
-    private Provider<PjsipManager> pjsipManagerProvider;
+    private Provider<PjsipTelephonyProvider> pjsipTelephonyProvider;
 
     private Provider<LeadRepositoryImpl> leadRepositoryImplProvider;
 
@@ -880,8 +892,6 @@ public final class DaggerCrmApplication_HiltComponents_SingletonC {
     private Provider<DailyLoginRepositoryImpl> dailyLoginRepositoryImplProvider;
 
     private Provider<DialerRepositoryImpl> dialerRepositoryImplProvider;
-
-    private Provider<PjsipTelephonyProvider> pjsipTelephonyProvider;
 
     private Provider<AuthApi> provideAuthApiProvider;
 
@@ -933,19 +943,18 @@ public final class DaggerCrmApplication_HiltComponents_SingletonC {
       this.provideRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 3));
       this.providePickupApiProvider = DoubleCheck.provider(new SwitchingProvider<PickupApi>(singletonCImpl, 2));
       this.syncWorker_AssistedFactoryProvider = SingleCheck.provider(new SwitchingProvider<SyncWorker_AssistedFactory>(singletonCImpl, 0));
-      this.pjsipManagerProvider = DoubleCheck.provider(new SwitchingProvider<PjsipManager>(singletonCImpl, 7));
+      this.pjsipTelephonyProvider = DoubleCheck.provider(new SwitchingProvider<PjsipTelephonyProvider>(singletonCImpl, 7));
       this.leadRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<LeadRepositoryImpl>(singletonCImpl, 8));
       this.reportingRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<ReportingRepositoryImpl>(singletonCImpl, 9));
       this.documentRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<DocumentRepositoryImpl>(singletonCImpl, 10));
       this.contactRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<ContactRepositoryImpl>(singletonCImpl, 11));
       this.dailyLoginRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<DailyLoginRepositoryImpl>(singletonCImpl, 12));
       this.dialerRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<DialerRepositoryImpl>(singletonCImpl, 13));
-      this.pjsipTelephonyProvider = DoubleCheck.provider(new SwitchingProvider<PjsipTelephonyProvider>(singletonCImpl, 14));
-      this.provideAuthApiProvider = DoubleCheck.provider(new SwitchingProvider<AuthApi>(singletonCImpl, 16));
-      this.authRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<AuthRepositoryImpl>(singletonCImpl, 15));
-      this.pickupRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<PickupRepositoryImpl>(singletonCImpl, 17));
-      this.provideSettingsDataStoreProvider = DoubleCheck.provider(new SwitchingProvider<SettingsDataStore>(singletonCImpl, 18));
-      this.settingsRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<SettingsRepositoryImpl>(singletonCImpl, 19));
+      this.provideAuthApiProvider = DoubleCheck.provider(new SwitchingProvider<AuthApi>(singletonCImpl, 15));
+      this.authRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<AuthRepositoryImpl>(singletonCImpl, 14));
+      this.pickupRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<PickupRepositoryImpl>(singletonCImpl, 16));
+      this.provideSettingsDataStoreProvider = DoubleCheck.provider(new SwitchingProvider<SettingsDataStore>(singletonCImpl, 17));
+      this.settingsRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<SettingsRepositoryImpl>(singletonCImpl, 18));
     }
 
     @Override
@@ -1014,8 +1023,8 @@ public final class DaggerCrmApplication_HiltComponents_SingletonC {
           case 6: // com.crm.v2.data.datastore.AuthDataStore 
           return (T) AppModule_ProvideAuthDataStoreFactory.provideAuthDataStore(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 7: // com.crm.v2.telephony.pjsip.PjsipManager 
-          return (T) new PjsipManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+          case 7: // com.crm.v2.telephony.provider.PjsipTelephonyProvider 
+          return (T) new PjsipTelephonyProvider(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           case 8: // com.crm.v2.data.repository.LeadRepositoryImpl 
           return (T) new LeadRepositoryImpl(singletonCImpl.providePickupApiProvider.get(), singletonCImpl.leadDao());
@@ -1035,22 +1044,19 @@ public final class DaggerCrmApplication_HiltComponents_SingletonC {
           case 13: // com.crm.v2.data.repository.DialerRepositoryImpl 
           return (T) new DialerRepositoryImpl(singletonCImpl.providePickupApiProvider.get());
 
-          case 14: // com.crm.v2.telephony.pjsip.PjsipTelephonyProvider 
-          return (T) new PjsipTelephonyProvider(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.pjsipManagerProvider.get());
-
-          case 15: // com.crm.v2.data.repository.AuthRepositoryImpl 
+          case 14: // com.crm.v2.data.repository.AuthRepositoryImpl 
           return (T) new AuthRepositoryImpl(singletonCImpl.provideAuthApiProvider.get(), singletonCImpl.provideAuthDataStoreProvider.get());
 
-          case 16: // com.crm.v2.data.network.api.AuthApi 
+          case 15: // com.crm.v2.data.network.api.AuthApi 
           return (T) NetworkModule_ProvideAuthApiFactory.provideAuthApi(singletonCImpl.provideRetrofitProvider.get());
 
-          case 17: // com.crm.v2.data.repository.PickupRepositoryImpl 
+          case 16: // com.crm.v2.data.repository.PickupRepositoryImpl 
           return (T) new PickupRepositoryImpl(singletonCImpl.providePickupApiProvider.get());
 
-          case 18: // com.crm.v2.data.datastore.SettingsDataStore 
+          case 17: // com.crm.v2.data.datastore.SettingsDataStore 
           return (T) AppModule_ProvideSettingsDataStoreFactory.provideSettingsDataStore(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 19: // com.crm.v2.data.repository.SettingsRepositoryImpl 
+          case 18: // com.crm.v2.data.repository.SettingsRepositoryImpl 
           return (T) new SettingsRepositoryImpl(singletonCImpl.providePickupApiProvider.get());
 
           default: throw new AssertionError(id);

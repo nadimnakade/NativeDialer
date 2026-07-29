@@ -103,7 +103,7 @@ public abstract interface PickupApi {
     java.lang.String key, @org.jetbrains.annotations.NotNull()
     kotlin.coroutines.Continuation<? super retrofit2.Response<java.util.Map<java.lang.String, java.lang.Object>>> $completion);
     
-    @retrofit2.http.POST(value = "Pickup/UpdateDialer")
+    @retrofit2.http.POST(value = "Dialer/update")
     @org.jetbrains.annotations.Nullable()
     public abstract java.lang.Object updateDialer(@retrofit2.http.Body()
     @org.jetbrains.annotations.NotNull()

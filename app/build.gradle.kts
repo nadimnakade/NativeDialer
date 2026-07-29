@@ -23,6 +23,9 @@ android {
         versionCode = 1
         versionName = "2.0.0"
 
+        multiDexEnabled = true
+        multiDexKeepFile = file("multidex_keep.pro")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
 
@@ -39,7 +42,7 @@ android {
         buildConfigField("String", "CLOUD_EXTENSION_PASSWORD", "\"$cloudExtensionPassword\"")
 
         ndk {
-            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
+            abiFilters += listOf("arm64-v8a")
         }
     }
 
@@ -68,10 +71,10 @@ android {
 
     ndkVersion = "27.1.12297006"
 
-    // PJSIP: native libs loaded from jniLibs/ — run scripts/build-pjsip.sh first
-    sourceSets {
-        getByName("main") {
-            jniLibs.srcDirs("src/main/jniLibs")
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/jni/CMakeLists.txt")
+            version = "3.22.1"
         }
     }
 
@@ -100,9 +103,6 @@ android {
 }
 
 dependencies {
-    // PJSIP Java SDK (placed in libs/ by scripts/build-pjsip.sh)
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-
     // Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -146,6 +146,7 @@ dependencies {
     implementation(libs.retrofit.kotlinx.serialization)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
+    implementation(libs.okhttp.sse)
 
     // Kotlinx Serialization
     implementation(libs.kotlinx.serialization.json)

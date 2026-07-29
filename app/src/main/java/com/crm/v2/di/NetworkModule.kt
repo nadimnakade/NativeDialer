@@ -52,7 +52,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(ApiConstants.BASE_URL)
+            .baseUrl(ApiConstants.API_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory(jsonMediaType))
             .build()

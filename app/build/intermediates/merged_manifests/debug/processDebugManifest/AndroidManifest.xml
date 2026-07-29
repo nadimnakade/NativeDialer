@@ -87,9 +87,8 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:testOnly="true"
         android:theme="@style/Theme.CRM.Splash"
-        android:usesCleartextTraffic="false" >
+        android:usesCleartextTraffic="true" >
 
         <!-- Main Activity -->
         <activity
@@ -137,6 +136,14 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
+
+        <!-- Test Call Activity (debug only, no launcher) -->
+        <activity
+            android:name="com.crm.v2.telephony.TestCallActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode"
+            android:exported="false"
+            android:theme="@style/Theme.CRM.Splash"
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- CloudConnect Webhook Receiver -->
         <receiver

@@ -20,7 +20,7 @@ class DialerRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 val records = response.body()?.map { dto ->
                     DialerRecord(
-                        key = dto.key ?: "",
+                        key = dto.key?.toString() ?: "",
                         clientName = dto.clientName ?: "",
                         contact = dto.contact ?: "",
                         product = dto.product,
@@ -46,7 +46,7 @@ class DialerRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 val records = response.body()?.map { dto ->
                     DialerRecord(
-                        key = dto.key ?: "",
+                        key = dto.key?.toString() ?: "",
                         clientName = dto.clientName ?: "",
                         contact = dto.contact ?: "",
                         product = dto.product,
@@ -83,7 +83,7 @@ class DialerRepositoryImpl @Inject constructor(
         return try {
             val body = mutableMapOf<String, String>(
                 "Key" to key,
-                "CPVStatus" to status,
+                "Status" to status,
                 "UserKey" to userKey,
             )
             callbackDate?.let { body["CallBackDate"] = it }

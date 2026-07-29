@@ -13,10 +13,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.crm.v2.telephony.CallState
+import kotlinx.coroutines.delay
 
 @Composable
 fun ActiveCallScreen(
     number: String,
+    clientName: String = "",
     callState: CallState,
     onHangup: () -> Unit,
     onMute: () -> Unit,
@@ -24,6 +26,29 @@ fun ActiveCallScreen(
     onHold: () -> Unit,
     onNavigateToUpdateStatus: () -> Unit,
 ) {
+    var elapsedSeconds by remember { mutableIntStateOf(0) }
+
+    val isCallActive = callState is CallState.Connected || callState is CallState.OnHold
+
+    LaunchedEffect(isCallActive) {
+        if (isCallActive) {
+            while (true) {
+                delay(1000L)
+                elapsedSeconds++
+            }
+        }
+    }
+
+    LaunchedEffect(callState) {
+        if (callState is CallState.Calling || callState is CallState.Ringing) {
+            elapsedSeconds = 0
+        }
+    }
+
+    val minutes = elapsedSeconds / 60
+    val seconds = elapsedSeconds % 60
+    val timerText = String.format("%02d:%02d", minutes, seconds)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -33,8 +58,16 @@ fun ActiveCallScreen(
     ) {
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Call info
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            if (clientName.isNotEmpty()) {
+                Text(
+                    text = clientName,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+            }
             Text(
                 text = number,
                 style = MaterialTheme.typography.headlineLarge,
@@ -44,20 +77,27 @@ fun ActiveCallScreen(
             Text(
                 text = callState.label,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
+                color = when (callState) {
+                    is CallState.Connected -> MaterialTheme.colorScheme.primary
+                    is CallState.OnHold -> MaterialTheme.colorScheme.tertiary
+                    is CallState.Calling -> MaterialTheme.colorScheme.onSurfaceVariant
+                    is CallState.Ringing -> MaterialTheme.colorScheme.primary
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "00:00",
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.Light,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            if (isCallActive) {
+                Text(
+                    text = timerText,
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Light,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Call controls
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -70,24 +110,12 @@ fun ActiveCallScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Update status button (enabled after call ends)
-        if (callState is CallState.Idle || callState is CallState.Error) {
-            Button(
-                onClick = onNavigateToUpdateStatus,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Update Call Status", style = MaterialTheme.typography.titleMedium)
-            }
-        }
-
-        // Hangup button
         Button(
             onClick = {
                 if (callState.isActive) onHangup()
                 else onNavigateToUpdateStatus()
             },
-            modifier = Modifier
-                .size(72.dp),
+            modifier = Modifier.size(72.dp),
             shape = CircleShape,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.error,
@@ -99,6 +127,8 @@ fun ActiveCallScreen(
                 modifier = Modifier.size(32.dp),
             )
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
     }
 }
 

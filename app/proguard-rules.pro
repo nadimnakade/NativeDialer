@@ -41,3 +41,10 @@
 
 # BuildConfig
 -keep class com.crm.v2.BuildConfig { *; }
+
+# PJSIP JNI - keep native methods and callback interface
+-keep class com.crm.v2.telephony.PjsipManager { *; }
+-keep class com.crm.v2.telephony.PjsipManager$Callback { *; }
+
+# Hilt entry points
+-keep class * extends dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper { *; }

@@ -53,17 +53,17 @@ data class DialerLiveDto(
 
 @Serializable
 data class DialerDataDto(
-    @SerialName("Key") val key: String? = null,
-    @SerialName("ClientName") val clientName: String? = null,
-    @SerialName("Contact") val contact: String? = null,
-    @SerialName("Product") val product: String? = null,
-    @SerialName("Campaign") val campaign: String? = null,
-    @SerialName("Salary") val salary: String? = null,
-    @SerialName("Company") val company: String? = null,
-    @SerialName("Status") val status: String? = null,
-    @SerialName("CallBackDate") val callBackDate: String? = null,
-    @SerialName("Remarks") val remarks: String? = null,
-    @SerialName("UserKey") val userKey: String? = null,
+    @SerialName("CD_KEY") val key: Int? = null,
+    @SerialName("CD_CLIENT_NAME") val clientName: String? = null,
+    @SerialName("CD_CONTACT") val contact: String? = null,
+    @SerialName("CD_PRODUCT") val product: String? = null,
+    @SerialName("CD_CAMPAIGN_NAME") val campaign: String? = null,
+    @SerialName("CD_SALARY") val salary: String? = null,
+    @SerialName("CD_COMPANY") val company: String? = null,
+    @SerialName("CD_STATUS") val status: String? = null,
+    @SerialName("CD_CALL_BACK_DATE") val callBackDate: String? = null,
+    @SerialName("CD_REMARKS") val remarks: String? = null,
+    @SerialName("CD_USER_KEY") val userKey: String? = null,
 )
 
 @Serializable

@@ -180,23 +180,36 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
 
             composable(Screen.Dialer.route) {
                 DialerScreen(
-                    onActiveCall = { number -> navController.navigate(Screen.ActiveCall.createRoute(number)) },
-                    onUpdateStatus = { key -> navController.navigate(Screen.UpdateStatus.createRoute(key)) },
+                    onNavigateBack = { navController.popBackStack() },
                 )
             }
 
             composable(Screen.ActiveCall.route, arguments = listOf(navArgument("number") { type = NavType.StringType })) { entry ->
+                val number = entry.arguments?.getString("number") ?: ""
                 ActiveCallScreen(
-                    number = entry.arguments?.getString("number") ?: "",
+                    number = number,
                     callState = com.crm.v2.telephony.CallState.Connected,
                     onHangup = { navController.popBackStack() },
                     onMute = {}, onSpeaker = {}, onHold = {},
-                    onNavigateToUpdateStatus = { navController.navigate("update_status/call_${entry.arguments?.getString("number")}") { popUpTo(Screen.Dialer.route) } },
+                    onNavigateToUpdateStatus = { navController.popBackStack() },
                 )
             }
 
-            composable(Screen.UpdateStatus.route, arguments = listOf(navArgument("key") { type = NavType.StringType })) {
+            composable(
+                Screen.UpdateStatus.route,
+                arguments = listOf(
+                    navArgument("key") { type = NavType.StringType },
+                    navArgument("name") { type = NavType.StringType },
+                    navArgument("contact") { type = NavType.StringType },
+                ),
+            ) { entry ->
+                val key = entry.arguments?.getString("key") ?: ""
+                val name = entry.arguments?.getString("name") ?: ""
+                val contact = entry.arguments?.getString("contact") ?: ""
                 UpdateStatusScreen(
+                    leadKey = key,
+                    clientName = name,
+                    mobileNo = contact,
                     onSave = { navController.navigate(Screen.Dialer.route) { popUpTo(Screen.Dialer.route) } },
                     onCancel = { navController.popBackStack() },
                 )

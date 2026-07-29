@@ -34,6 +34,7 @@ import com.crm.v2.presentation.ui.whistleblower.WhistleblowerViewModel_HiltModul
 import com.crm.v2.services.CrmFirebaseMessagingService_GeneratedInjector;
 import com.crm.v2.services.ForegroundCallService_GeneratedInjector;
 import com.crm.v2.services.SyncWorker_HiltModule;
+import com.crm.v2.telephony.TestCallActivity_GeneratedInjector;
 import dagger.Binds;
 import dagger.Component;
 import dagger.Module;
@@ -243,6 +244,7 @@ public final class CrmApplication_HiltComponents {
   )
   @ActivityScoped
   public abstract static class ActivityC implements MainActivity_GeneratedInjector,
+      TestCallActivity_GeneratedInjector,
       ActivityComponent,
       DefaultViewModelFactories.ActivityEntryPoint,
       HiltWrapper_HiltViewModelFactory_ActivityCreatorEntryPoint,

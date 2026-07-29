@@ -1,7 +1,9 @@
 package com.crm.v2.common.constants
 
 object ApiConstants {
-    const val BASE_URL = "https://1up.co.in/DialerAPI/api/"
+    const val API_BASE_URL = "https://1up.co.in/DialerAPI/api/"
+    const val DIALER_WS_URL = "http://160.250.28.172:5031/Dialer_WS/"
+
     const val CONNECT_TIMEOUT_SECONDS = 30L
     const val READ_TIMEOUT_SECONDS = 30L
     const val WRITE_TIMEOUT_SECONDS = 30L
@@ -32,7 +34,7 @@ object ApiConstants {
         const val GET_DATA = "Pickup/GetDialerData"
         const val GET_NOT_UPDATED = "Pickup/GetDialerNotUpdatedData"
         const val UPDATE_STATUS = "Pickup/UpdateDialingStatus"
-        const val UPDATE = "Pickup/UpdateDialer"
+        const val UPDATE = "Dialer/update"
         const val INSERT_LEAD = "Pickup/InsertLeadInfo"
         const val ADD_LEAD = "Pickup/AddLead"
         const val GET_LEAD = "Pickup/GetLead"
@@ -67,6 +69,12 @@ object ApiConstants {
         const val GENERATE = "Pickup/GeneratePdf"
     }
 
+    object Call {
+        const val PLACE = "Call/Place"
+        const val HANGUP = "Call/Hangup"
+        const val STATUS = "Call/Status"
+    }
+
     object CloudConnect {
         const val BASE_URL = "https://crm2.cloud-connect.in/ccpl_api/v1.4/"
         const val CLICK_2_CALL = "api/info/click2call"
@@ -76,9 +84,10 @@ object ApiConstants {
     }
 
     object Sip {
-        const val SERVER = "sip2.cloud-connect.in "
+        const val SERVER = "sip2.cloud-connect.in"
         const val PORT = "7065"
-        const val USERNAME = "701"
-        const val PASSWORD = "Tejas@002"
+        const val USERNAME = "102724701"
+        const val PASSWORD = "Tejas@001"
+        const val REALM = "sip2.cloud-connect.in"
     }
 }

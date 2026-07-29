@@ -27,7 +27,7 @@ sealed interface TelephonyEvent {
     data class IncomingCall(val number: String, val callerName: String?) : TelephonyEvent
     data class CallConnected(val callId: String) : TelephonyEvent
     data class CallDisconnected(val callId: String, val duration: Int) : TelephonyEvent
-    data object RegistrationFailed : TelephonyEvent
+    data class RegistrationFailed(val message: String = "Registration failed") : TelephonyEvent
     data class Error(val message: String) : TelephonyEvent
 }
 

@@ -1,7 +1,7 @@
 package com.crm.v2.di
 
 import com.crm.v2.telephony.TelephonyManager
-import com.crm.v2.telephony.pjsip.PjsipTelephonyProvider
+import com.crm.v2.telephony.provider.PjsipTelephonyProvider
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

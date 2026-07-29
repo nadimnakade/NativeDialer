@@ -1,5 +1,7 @@
 package com.crm.v2.presentation.ui.dialer
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -9,12 +11,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.crm.v2.common.constants.StatusConstants
 import com.crm.v2.common.constants.StatusOption
+import java.util.Calendar
 
 data class UpdateStatusUiState(
+    val leadKey: String = "",
+    val clientName: String = "",
+    val mobileNo: String = "",
+    val callDuration: Int = 0,
     val selectedStatus: StatusOption? = null,
     val callbackDate: String = "",
     val callbackTime: String = "",
@@ -37,11 +45,25 @@ data class UpdateStatusUiState(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpdateStatusScreen(
+    leadKey: String = "",
+    clientName: String = "",
+    mobileNo: String = "",
+    callDuration: Int = 0,
     onSave: (UpdateStatusUiState) -> Unit,
     onCancel: () -> Unit,
 ) {
-    var state by remember { mutableStateOf(UpdateStatusUiState()) }
+    var state by remember {
+        mutableStateOf(
+            UpdateStatusUiState(
+                leadKey = leadKey,
+                clientName = clientName,
+                mobileNo = mobileNo,
+                callDuration = callDuration,
+            )
+        )
+    }
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -51,20 +73,55 @@ fun UpdateStatusScreen(
     ) {
         Text(
             text = "Update Call Status",
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        if (clientName.isNotEmpty() || mobileNo.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                ),
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    if (clientName.isNotEmpty()) {
+                        Text(
+                            clientName,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                    if (mobileNo.isNotEmpty()) {
+                        Text(
+                            mobileNo,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    if (callDuration > 0) {
+                        val mins = callDuration / 60
+                        val secs = callDuration % 60
+                        Text(
+                            "Call Duration: ${String.format("%02d:%02d", mins, secs)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+            }
+        }
 
-        // Status Selection
+        Spacer(modifier = Modifier.height(20.dp))
+
         Text("Call Status *", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(8.dp))
 
-        StatusConstants.allStatuses.chunked(2).forEach { row ->
+        StatusConstants.allStatuses.chunked(3).forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 row.forEach { status ->
                     FilterChip(
@@ -75,42 +132,76 @@ fun UpdateStatusScreen(
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
         }
 
-        // Follow-up fields (shown when Follow Up or SameDay Follow Up)
         if (state.selectedStatus?.value in listOf(StatusConstants.FOLLOW_UP, StatusConstants.SAME_DAY_FOLLOW_UP)) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(12.dp)) {
                     Text("Schedule Follow-up", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    OutlinedTextField(
-                        value = state.callbackDate,
-                        onValueChange = { state = state.copy(callbackDate = it) },
-                        label = { Text("Date") },
-                        placeholder = { Text("YYYY-MM-DD") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
                     Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = state.callbackTime,
-                        onValueChange = { state = state.copy(callbackTime = it) },
-                        label = { Text("Time") },
-                        placeholder = { Text("HH:MM") },
-                        singleLine = true,
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                    )
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        OutlinedTextField(
+                            value = state.callbackDate,
+                            onValueChange = { state = state.copy(callbackDate = it) },
+                            label = { Text("Date") },
+                            placeholder = { Text("DD/MM/YYYY") },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                            trailingIcon = {
+                                IconButton(onClick = {
+                                    val cal = Calendar.getInstance()
+                                    DatePickerDialog(
+                                        context,
+                                        { _, year, month, day ->
+                                            state = state.copy(callbackDate = String.format("%02d/%02d/%04d", day, month + 1, year))
+                                        },
+                                        cal.get(Calendar.YEAR),
+                                        cal.get(Calendar.MONTH),
+                                        cal.get(Calendar.DAY_OF_MONTH),
+                                    ).show()
+                                }) {
+                                    Icon(Icons.Filled.CalendarMonth, contentDescription = "Pick date")
+                                }
+                            },
+                        )
+                        OutlinedTextField(
+                            value = state.callbackTime,
+                            onValueChange = { state = state.copy(callbackTime = it) },
+                            label = { Text("Time") },
+                            placeholder = { Text("HH:MM") },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                            trailingIcon = {
+                                IconButton(onClick = {
+                                    val cal = Calendar.getInstance()
+                                    TimePickerDialog(
+                                        context,
+                                        { _, hour, minute ->
+                                            state = state.copy(callbackTime = String.format("%02d:%02d", hour, minute))
+                                        },
+                                        cal.get(Calendar.HOUR_OF_DAY),
+                                        cal.get(Calendar.MINUTE),
+                                        false,
+                                    ).show()
+                                }) {
+                                    Icon(Icons.Filled.Schedule, contentDescription = "Pick time")
+                                }
+                            },
+                        )
+                    }
                 }
             }
         }
 
-        // Product selection
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         Text("Is HL/LAP/BL/PL?", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Spacer(modifier = Modifier.height(6.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf("HL", "LAP", "BL", "PL", "CC").forEach { product ->
                 FilterChip(
                     selected = state.isHLLAPBL == product,
@@ -120,7 +211,7 @@ fun UpdateStatusScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(checked = state.isCibilBad, onCheckedChange = { state = state.copy(isCibilBad = it) })
@@ -132,8 +223,7 @@ fun UpdateStatusScreen(
             }
         }
 
-        // Daily Login section
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(checked = state.addDailyLogin, onCheckedChange = { state = state.copy(addDailyLogin = it) })
             Text("Add Daily Login", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
@@ -141,7 +231,7 @@ fun UpdateStatusScreen(
 
         if (state.addDailyLogin) {
             Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     OutlinedTextField(value = state.losNo, onValueChange = { state = state.copy(losNo = it) }, label = { Text("LOS No") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                     OutlinedTextField(value = state.appNo, onValueChange = { state = state.copy(appNo = it) }, label = { Text("App No") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                     OutlinedTextField(value = state.banks, onValueChange = { state = state.copy(banks = it) }, label = { Text("Banks") }, singleLine = true, modifier = Modifier.fillMaxWidth())
@@ -152,39 +242,41 @@ fun UpdateStatusScreen(
             }
         }
 
-        // Remarks
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             value = state.remarks,
             onValueChange = { state = state.copy(remarks = it) },
             label = { Text("Remarks") },
             modifier = Modifier.fillMaxWidth(),
-            minLines = 3,
+            minLines = 2,
+            maxLines = 4,
         )
 
-        // WhatsApp
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             value = state.whatsappMessage,
             onValueChange = { state = state.copy(whatsappMessage = it) },
             label = { Text("WhatsApp Message") },
             modifier = Modifier.fillMaxWidth(),
             minLines = 2,
+            maxLines = 3,
         )
 
-        // Error
         state.error?.let {
             Spacer(modifier = Modifier.height(8.dp))
             Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         }
 
-        // Actions
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedButton(onClick = onCancel, modifier = Modifier.weight(1f)) { Text("Cancel") }
-            Button(onClick = { onSave(state) }, modifier = Modifier.weight(1f)) {
+            Button(
+                onClick = { onSave(state) },
+                modifier = Modifier.weight(1f),
+                enabled = state.selectedStatus != null && !state.isLoading,
+            ) {
                 if (state.isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                else Text("Save")
+                else Text("Update")
             }
         }
 

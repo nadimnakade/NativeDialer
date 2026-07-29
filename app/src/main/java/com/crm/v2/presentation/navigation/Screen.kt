@@ -15,8 +15,8 @@ sealed class Screen(val route: String) {
     data object ActiveCall : Screen("active_call/{number}") {
         fun createRoute(number: String) = "active_call/$number"
     }
-    data object UpdateStatus : Screen("update_status/{key}") {
-        fun createRoute(key: String) = "update_status/$key"
+    data object UpdateStatus : Screen("update_status/{key}/{name}/{contact}") {
+        fun createRoute(key: String, name: String, contact: String) = "update_status/$key/$name/$contact"
     }
     data object Contacts : Screen("contacts")
     data object ContactDetail : Screen("contact_detail/{id}") {
