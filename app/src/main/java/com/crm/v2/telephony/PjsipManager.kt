@@ -31,7 +31,9 @@ class PjsipManager {
     private external fun nativeMakeCall(uri: String): Int
     private external fun nativeHangupCall(callId: Int): Int
     private external fun nativeAnswerCall(callId: Int, code: Int): Int
+    private external fun nativeGetActiveCallId(): Int
     private external fun nativeSetCallback(callback: Callback)
+    private external fun nativeSetMute(callId: Int, mute: Boolean): Int
     private external fun nativeDestroy()
 
     private var isCreated = false
@@ -74,9 +76,21 @@ class PjsipManager {
         return nativeHangupCall(callId)
     }
 
+    fun getActiveCallId(): Int {
+        if (!isCreated) return -1
+        return nativeGetActiveCallId()
+    }
+
     fun answer(callId: Int, code: Int = 200): Int {
         if (!isCreated) return -1
         return nativeAnswerCall(callId, code)
+    }
+
+    fun setMute(callId: Int, mute: Boolean): Int {
+        if (!isCreated) return -1
+        val result = nativeSetMute(callId, mute)
+        Log.i(TAG, "Set mute (callId=$callId, mute=$mute): $result")
+        return result
     }
 
     fun destroy() {

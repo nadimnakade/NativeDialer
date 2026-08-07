@@ -1,0 +1,1 @@
+D:\Git_Repos\Dialer - Copy\Frontend\app\src\main\jni\CMakeLists.txt

@@ -1,0 +1,14 @@
+# ninja log v5
+1	14	0	clean	bb52937d203c0c5d
+5	916	8074781165322345	build.ninja	5034037389c49b77
+1844	5608	8074781224746082	CMakeFiles/pjsip_bridge.dir/pjsip_wss_transport.c.o	2272cb63fb632a67
+1	7256	8074781241222934	CMakeFiles/pjsip_bridge.dir/pjsip_jni.c.o	3e10764f39a6134c
+7258	9517	8074781263042216	D:/Git_Repos/Dialer - Copy/Frontend/app/build/intermediates/cxx/Debug/1i5q5do5/obj/arm64-v8a/libpjsip_bridge.so	d89b7a78b1c9510c
+1	19	0	clean	bb52937d203c0c5d
+1	20	0	clean	bb52937d203c0c5d
+26	436	8076596505277052	CMakeFiles/pjsip_bridge.dir/pjsip_wss_transport.c.o	2272cb63fb632a67
+12	517	8076596506147433	CMakeFiles/pjsip_bridge.dir/pjsip_jni.c.o	3e10764f39a6134c
+517	911	8076596509645761	D:/Git_Repos/Dialer - Copy/Frontend/app/build/intermediates/cxx/Debug/1i5q5do5/obj/arm64-v8a/libpjsip_bridge.so	d89b7a78b1c9510c
+0	21	0	clean	bb52937d203c0c5d
+0	16	0	clean	bb52937d203c0c5d
+0	15	0	clean	bb52937d203c0c5d

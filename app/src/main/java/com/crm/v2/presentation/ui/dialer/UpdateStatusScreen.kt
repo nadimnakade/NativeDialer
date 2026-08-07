@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -77,15 +78,29 @@ fun UpdateStatusScreen(
             fontWeight = FontWeight.Bold,
         )
 
+        if (leadKey.isEmpty()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedTextField(
+                value = state.clientName,
+                onValueChange = { state = state.copy(clientName = it) },
+                label = { Text("Client Name *") },
+                placeholder = { Text("Enter client name") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+            )
+        }
+
         if (clientName.isNotEmpty() || mobileNo.isNotEmpty()) {
             Spacer(modifier = Modifier.height(12.dp))
             Card(
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 ),
             ) {
-                Column(modifier = Modifier.padding(12.dp)) {
+                Column(modifier = Modifier.padding(14.dp)) {
                     if (clientName.isNotEmpty()) {
                         Text(
                             clientName,
@@ -107,6 +122,7 @@ fun UpdateStatusScreen(
                             "Call Duration: ${String.format("%02d:%02d", mins, secs)}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium,
                         )
                     }
                 }
@@ -137,8 +153,11 @@ fun UpdateStatusScreen(
 
         if (state.selectedStatus?.value in listOf(StatusConstants.FOLLOW_UP, StatusConstants.SAME_DAY_FOLLOW_UP)) {
             Spacer(modifier = Modifier.height(12.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(12.dp)) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
                     Text("Schedule Follow-up", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -230,7 +249,10 @@ fun UpdateStatusScreen(
         }
 
         if (state.addDailyLogin) {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+            ) {
                 Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     OutlinedTextField(value = state.losNo, onValueChange = { state = state.copy(losNo = it) }, label = { Text("LOS No") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                     OutlinedTextField(value = state.appNo, onValueChange = { state = state.copy(appNo = it) }, label = { Text("App No") }, singleLine = true, modifier = Modifier.fillMaxWidth())
@@ -250,6 +272,7 @@ fun UpdateStatusScreen(
             modifier = Modifier.fillMaxWidth(),
             minLines = 2,
             maxLines = 4,
+            shape = RoundedCornerShape(12.dp),
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -260,6 +283,7 @@ fun UpdateStatusScreen(
             modifier = Modifier.fillMaxWidth(),
             minLines = 2,
             maxLines = 3,
+            shape = RoundedCornerShape(12.dp),
         )
 
         state.error?.let {
@@ -267,16 +291,27 @@ fun UpdateStatusScreen(
             Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedButton(onClick = onCancel, modifier = Modifier.weight(1f)) { Text("Cancel") }
+            OutlinedButton(
+                onClick = onCancel,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(10.dp),
+            ) { Text("Cancel") }
             Button(
-                onClick = { onSave(state) },
+                onClick = {
+                    if (leadKey.isEmpty() && state.clientName.isBlank()) {
+                        state = state.copy(error = "Please Enter Client Name")
+                    } else {
+                        onSave(state)
+                    }
+                },
                 modifier = Modifier.weight(1f),
                 enabled = state.selectedStatus != null && !state.isLoading,
+                shape = RoundedCornerShape(10.dp),
             ) {
                 if (state.isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                else Text("Update")
+                else Text("Update", fontWeight = FontWeight.SemiBold)
             }
         }
 

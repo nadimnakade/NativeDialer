@@ -32,6 +32,7 @@ data class DialerUiState(
     val dndStatus: String? = null,
     val error: String? = null,
     val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
     val lastCallMessage: String? = null,
     val contactSearchQuery: String = "",
     val groupedContacts: Map<Char, List<Contact>> = emptyMap(),
@@ -41,6 +42,9 @@ data class DialerUiState(
     val hasMoreLeads: Boolean = true,
     val showUpdateStatus: Boolean = false,
     val callDuration: Int = 0,
+    val isMuted: Boolean = false,
+    val isSpeakerOn: Boolean = false,
+    val isOnHold: Boolean = false,
 )
 
 @HiltViewModel
@@ -58,18 +62,34 @@ class DialerViewModel @Inject constructor(
     private var autoDialJob: Job? = null
     private var contactJob: Job? = null
     private var callStartTime: Long = 0L
+    private var lastCalledIndex: Int = -1
 
     init {
         viewModelScope.launch {
             telephonyManager.callState.collect { state ->
                 val wasActive = _uiState.value.callState.isActive
                 val nowIdle = state is CallState.Idle
-                _uiState.update { it.copy(callState = state, isLoading = false) }
+                _uiState.update { it.copy(callState = state) }
 
                 if (wasActive && nowIdle && _uiState.value.currentLead != null) {
+                    val lead = _uiState.value.currentLead!!
                     val duration = if (callStartTime > 0) ((System.currentTimeMillis() - callStartTime) / 1000).toInt() else 0
                     callStartTime = 0L
-                    _uiState.update { it.copy(callDuration = duration, showUpdateStatus = true) }
+                    _uiState.update {
+                        it.copy(
+                            callDuration = duration,
+                            showUpdateStatus = true,
+                            isMuted = false,
+                            isSpeakerOn = false,
+                            isOnHold = false,
+                            isLoading = false,
+                        )
+                    }
+                    if (lead.key.isNotEmpty()) {
+                        viewModelScope.launch {
+                            dialerRepository.updateDialingStatus(lead.key)
+                        }
+                    }
                 }
             }
         }
@@ -113,6 +133,10 @@ class DialerViewModel @Inject constructor(
 
     fun onPhoneNumberChanged(number: String) {
         _uiState.update { it.copy(phoneNumber = number, dndStatus = null, error = null) }
+    }
+
+    fun clearManualNumber() {
+        _uiState.update { it.copy(phoneNumber = "", dndStatus = null) }
     }
 
     fun onContactSearchChanged(query: String) {
@@ -199,7 +223,8 @@ class DialerViewModel @Inject constructor(
         val userKey = authDataStore.userKey ?: return
         _uiState.update { it.copy(isAutoDialing = true) }
 
-        viewModelScope.launch {
+        autoDialJob?.cancel()
+        autoDialJob = viewModelScope.launch {
             telephonyManager.register(TelephonyConfig(
                     providerType = com.crm.v2.telephony.ProviderType.PJSIP,
                     sipServer = ApiConstants.Sip.SERVER,
@@ -218,7 +243,8 @@ class DialerViewModel @Inject constructor(
     fun stopAutoDial() {
         autoDialJob?.cancel()
         autoDialJob = null
-        _uiState.update { it.copy(isAutoDialing = false, currentLead = null, showUpdateStatus = false) }
+        lastCalledIndex = -1
+        _uiState.update { it.copy(isAutoDialing = false, currentLead = null, showUpdateStatus = false, isMuted = false, isSpeakerOn = false, isOnHold = false) }
         viewModelScope.launch {
             if (telephonyManager.getCurrentState().isActive) {
                 telephonyManager.hangup()
@@ -243,6 +269,7 @@ class DialerViewModel @Inject constructor(
                     sipPassword = ApiConstants.Sip.PASSWORD,
                 ))
                 telephonyManager.call(trimmed)
+                _uiState.update { it.copy(isLoading = false) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = "Call failed: ${e.message}", isLoading = false) }
             }
@@ -255,7 +282,23 @@ class DialerViewModel @Inject constructor(
         manualCall(number)
     }
 
+    fun callManualNumber(number: String) {
+        val trimmed = number.trim()
+        _uiState.update {
+            it.copy(
+                currentLead = DialerRecord(key = "", clientName = "", contact = trimmed),
+                callDuration = 0,
+                showUpdateStatus = false,
+                isMuted = false,
+                isSpeakerOn = false,
+                isOnHold = false,
+            )
+        }
+        manualCall(trimmed)
+    }
+
     fun callLead(lead: DialerRecord) {
+        lastCalledIndex = _uiState.value.dialerQueue.indexOfFirst { it.key == lead.key }
         _uiState.update { it.copy(currentLead = lead, showUpdateStatus = false, callDuration = 0) }
         callStartTime = 0L
         manualCall(lead.contact)
@@ -277,26 +320,39 @@ class DialerViewModel @Inject constructor(
         _uiState.update { it.copy(error = null) }
     }
 
-    fun toggleMute() { viewModelScope.launch { telephonyManager.mute(true) } }
-    fun toggleSpeaker() { viewModelScope.launch { telephonyManager.speaker(true) } }
-    fun toggleHold() {
+    fun toggleMute() {
         viewModelScope.launch {
-            if (_uiState.value.callState is CallState.OnHold) telephonyManager.resume()
-            else telephonyManager.hold()
+            val newMuted = !_uiState.value.isMuted
+            telephonyManager.mute(newMuted)
+            _uiState.update { it.copy(isMuted = newMuted) }
         }
     }
 
-    fun skipCurrentLead() {
-        _uiState.update { it.copy(showUpdateStatus = false, currentLead = null) }
-        autoDialNext()
+    fun toggleSpeaker() {
+        viewModelScope.launch {
+            val newSpeaker = !_uiState.value.isSpeakerOn
+            telephonyManager.speaker(newSpeaker)
+            _uiState.update { it.copy(isSpeakerOn = newSpeaker) }
+        }
+    }
+
+    fun toggleHold() {
+        viewModelScope.launch {
+            if (_uiState.value.isOnHold) {
+                telephonyManager.resume()
+                _uiState.update { it.copy(isOnHold = false) }
+            } else {
+                telephonyManager.hold()
+                _uiState.update { it.copy(isOnHold = true) }
+            }
+        }
     }
 
     private fun autoDialNext() {
         autoDialJob?.cancel()
         autoDialJob = viewModelScope.launch {
             val queue = _uiState.value.dialerQueue
-            val index = queue.indexOfFirst { it.key == _uiState.value.currentLead?.key }
-            val nextIndex = index + 1
+            val nextIndex = lastCalledIndex + 1
 
             if (nextIndex < queue.size) {
                 delay(_uiState.value.autoDialInterval * 1000L)
@@ -315,15 +371,43 @@ class DialerViewModel @Inject constructor(
         callbackDate: String?,
         remarks: String?,
         userKey: String,
+        callDuration: Int = 0,
+        isHLLAPBL: String = "",
+        isCibilBad: Boolean = false,
+        isRealEstate: Boolean = false,
     ) {
         val shouldContinue = _uiState.value.isAutoDialing
         viewModelScope.launch {
-            dialerRepository.updateDialer(key, status, callbackDate, remarks, userKey)
-            _uiState.update { it.copy(showUpdateStatus = false, currentLead = null, callDuration = 0) }
-
+            _uiState.update { it.copy(isSaving = true) }
+            try {
+                // TODO(manual): for manual leads (key == ""), server should be
+                // Dialer/lead-info-new (create), not updateDialer. Revisit when wiring
+                // the API contract.
+                dialerRepository.updateDialer(
+                    key = key,
+                    status = status,
+                    callbackDate = callbackDate,
+                    remarks = remarks,
+                    userKey = userKey,
+                )
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = "Failed to save: ${e.message}", isSaving = false) }
+            }
+            _uiState.update { it.copy(showUpdateStatus = false, currentLead = null, callDuration = 0, isSaving = false) }
             if (shouldContinue) {
-                delay(5000L)
-                autoDialNext()
+                val userK = authDataStore.userKey ?: return@launch
+                dialerRepository.getDialerData(userK).let { result ->
+                    when (result) {
+                        is com.crm.v2.common.result.Resource.Success -> {
+                            _uiState.update { it.copy(dialerQueue = result.data) }
+                            autoDialNext()
+                        }
+                        is com.crm.v2.common.result.Resource.Error -> {
+                            _uiState.update { it.copy(error = result.message, isAutoDialing = false) }
+                        }
+                        else -> {}
+                    }
+                }
             }
         }
     }

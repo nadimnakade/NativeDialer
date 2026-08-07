@@ -38,6 +38,7 @@ class ForegroundCallService : LifecycleService() {
     override fun onBind(intent: Intent): IBinder? = null
 
     private fun createNotificationChannel() {
+        // Notification channels require API 26+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CrmApplication.CHANNEL_FOREGROUND,

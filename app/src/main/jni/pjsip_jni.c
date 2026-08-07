@@ -381,6 +381,19 @@ JNIEXPORT jint JNICALL Java_com_crm_v2_telephony_PjsipManager_nativeHangupCall(
     return (jint)status;
 }
 
+JNIEXPORT jint JNICALL Java_com_crm_v2_telephony_PjsipManager_nativeGetActiveCallId(JNIEnv *env, jobject thiz) {
+    pjsua_call_id call_ids[8];
+    unsigned count = 8;
+    pj_status_t status = pjsua_enum_calls(call_ids, &count);
+    if (status != PJ_SUCCESS || count == 0) {
+        LOGI("Get active call: no active calls (status=%d, count=%u)", status, count);
+        return (jint)-1;
+    }
+    int active_id = (int)call_ids[0];
+    LOGI("Get active call: call_id=%d (count=%u)", active_id, count);
+    return (jint)active_id;
+}
+
 JNIEXPORT void JNICALL Java_com_crm_v2_telephony_PjsipManager_nativeSetCallback(
         JNIEnv *env, jobject thiz, jobject callback) {
     if (g_callback_obj) {
@@ -401,6 +414,30 @@ JNIEXPORT jint JNICALL Java_com_crm_v2_telephony_PjsipManager_nativeAnswerCall(
         JNIEnv *env, jobject thiz, jint call_id, jint code) {
     pj_status_t status = pjsua_call_answer(call_id, code, NULL, NULL);
     LOGI("Answer call: call_id=%d, code=%d, status=%d", call_id, code, status);
+    return (jint)status;
+}
+
+JNIEXPORT jint JNICALL Java_com_crm_v2_telephony_PjsipManager_nativeSetMute(
+        JNIEnv *env, jobject thiz, jint call_id, jboolean mute) {
+    pjsua_call_info info;
+    pj_status_t status = pjsua_call_get_info(call_id, &info);
+    if (status != PJ_SUCCESS) {
+        LOGE("Set mute: call_get_info failed: %d", status);
+        return (jint)status;
+    }
+
+    if (info.conf_slot > 0) {
+        if (mute) {
+            status = pjsua_conf_adjust_tx_level(info.conf_slot, 0.0);
+            LOGI("Mute ON: call_id=%d, conf_slot=%d, tx_level=0, status=%d", call_id, info.conf_slot, status);
+        } else {
+            status = pjsua_conf_adjust_tx_level(info.conf_slot, 1.0);
+            LOGI("Mute OFF: call_id=%d, conf_slot=%d, tx_level=1, status=%d", call_id, info.conf_slot, status);
+        }
+    } else {
+        LOGI("Set mute: no conf_slot for call_id=%d", call_id);
+    }
+
     return (jint)status;
 }
 

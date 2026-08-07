@@ -57,8 +57,9 @@ interface PickupApi {
     @GET(ApiConstants.Dialer.UPDATE_STATUS)
     suspend fun updateDialingStatus(@Query("key") key: String): Response<Map<String, Any>>
 
+    @FormUrlEncoded
     @POST(ApiConstants.Dialer.UPDATE)
-    suspend fun updateDialer(@Body body: Map<String, String>): Response<Map<String, Any>>
+    suspend fun updateDialer(@FieldMap body: Map<String, String>): Response<Map<String, Any>>
 
     // Leads
     @GET(ApiConstants.Dialer.GET_LEAD)

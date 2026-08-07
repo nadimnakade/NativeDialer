@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -54,13 +55,21 @@ class MainActivity : ComponentActivity() {
         Manifest.permission.READ_PHONE_STATE,
     )
 
-    private val optionalPermissions = arrayOf(
-        Manifest.permission.READ_CALL_LOG,
-        Manifest.permission.WRITE_CALL_LOG,
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.POST_NOTIFICATIONS,
-    )
+    // Optional permissions - remove POST_NOTIFICATIONS for API < 33
+    private val optionalPermissions: Array<String>
+        get() {
+            val perms = mutableListOf(
+                Manifest.permission.READ_CALL_LOG,
+                Manifest.permission.WRITE_CALL_LOG,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+            )
+            // POST_NOTIFICATIONS requires API 33+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                perms.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            return perms.toTypedArray()
+        }
 
     private var criticalRequestInFlight = false
     private var optionalRequestInFlight = false
@@ -185,11 +194,21 @@ private fun PermissionScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        val permissionText = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            "To make calls, this app needs:\n\n" +
+                    "• Microphone (audio during calls)\n" +
+                    "• Phone (make/manage calls)\n" +
+                    "• Phone state (identify call status)\n" +
+                    "• Notifications (call notifications)"
+        } else {
+            "To make calls, this app needs:\n\n" +
+                    "• Microphone (audio during calls)\n" +
+                    "• Phone (make/manage calls)\n" +
+                    "• Phone state (identify call status)"
+        }
+
         Text(
-            text = "To make calls, this app needs:\n\n" +
-                    "\u2022 Microphone (audio during calls)\n" +
-                    "\u2022 Phone (make/manage calls)\n" +
-                    "\u2022 Phone state (identify call status)",
+            text = permissionText,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
             textAlign = TextAlign.Start

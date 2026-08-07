@@ -1,10 +1,18 @@
 cmake_minimum_required(VERSION 3.22.1)
 project(pjsip_bridge C)
 
-set(PJSIP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../Dialer/pjsip")
-set(PJSIP_BUILD "${PJSIP_ROOT}/build_android")
-set(MBEDTLS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../Dialer/mbedtls")
-set(MBEDTLS_BUILD "${MBEDTLS_ROOT}/build_android")
+set(PJSIP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../Dialer - Copy/pjsip")
+set(MBEDTLS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../Dialer - Copy/mbedtls")
+
+if(ANDROID_ABI STREQUAL "arm64-v8a")
+    set(PJSIP_BUILD "${PJSIP_ROOT}/build_android")
+    set(MBEDTLS_BUILD "${MBEDTLS_ROOT}/build_android")
+elseif(ANDROID_ABI STREQUAL "armeabi-v7a")
+    set(PJSIP_BUILD "${PJSIP_ROOT}/build_android_v7a")
+    set(MBEDTLS_BUILD "${MBEDTLS_ROOT}/build_android_v7a")
+else()
+    message(FATAL_ERROR "Unsupported ABI: ${ANDROID_ABI}")
+endif()
 
 add_library(pjsip_bridge SHARED
     pjsip_jni.c

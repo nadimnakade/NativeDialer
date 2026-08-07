@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.crm.v2.app-mergeReleaseResources-88:/values-v16/values-v16.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\nadim\\.gradle\\caches\\8.9\\transforms\\61fdbfd6aef1a17692d273f955029ad4\\transformed\\appcompat-1.6.1\\res\\values-v16\\values-v16.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "5",
+                        "endColumns": "12",
+                        "endOffsets": "223"
+                    }
+                }
+            ]
+        }
+    ]
+}

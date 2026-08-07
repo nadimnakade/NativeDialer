@@ -1,5 +1,6 @@
 package com.crm.v2.data.repository
 
+import android.util.Log
 import com.crm.v2.common.result.Resource
 import com.crm.v2.data.network.api.PickupApi
 import com.crm.v2.domain.model.DialerRecord
@@ -68,10 +69,13 @@ class DialerRepositoryImpl @Inject constructor(
 
     override suspend fun updateDialingStatus(key: String): Resource<String> {
         return try {
+            Log.d("DialerRepository", "updateDialingStatus key: $key")
             val response = pickupApi.updateDialingStatus(key)
+            Log.d("DialerRepository", "updateDialingStatus response: ${response.code()} ${response.message()}")
             if (response.isSuccessful) Resource.Success("Status updated")
-            else Resource.Error("Failed to update dialing status")
+            else Resource.Error("Failed to update dialing status: ${response.code()}")
         } catch (e: Exception) {
+            Log.e("DialerRepository", "updateDialingStatus error", e)
             Resource.Error(e.message ?: "Network error", e)
         }
     }
@@ -83,16 +87,25 @@ class DialerRepositoryImpl @Inject constructor(
         return try {
             val body = mutableMapOf<String, String>(
                 "Key" to key,
-                "Status" to status,
+                "Status" to status.ifEmpty { "-1" },
                 "UserKey" to userKey,
+                "Remarks" to (remarks?.ifEmpty { "NA" } ?: "NA"),
+                "CallBackDate" to (callbackDate ?: ""),
+                "CallBackTime" to "",
+                "CallDuration" to "0@|0",
+                "CallDate" to "0",
+                "IsHLLAPBL" to "0",
+                "IsCibilBad" to "0",
+                "IsRealEstate" to "0",
             )
-            callbackDate?.let { body["CallBackDate"] = it }
-            remarks?.let { body["Remarks"] = it }
 
+            Log.d("DialerRepository", "updateDialer body: $body")
             val response = pickupApi.updateDialer(body)
+            Log.d("DialerRepository", "updateDialer response: ${response.code()} ${response.message()}")
             if (response.isSuccessful) Resource.Success("Dialer updated")
-            else Resource.Error("Failed to update dialer")
+            else Resource.Error("Failed to update dialer: ${response.code()} ${response.message()}")
         } catch (e: Exception) {
+            Log.e("DialerRepository", "updateDialer error", e)
             Resource.Error(e.message ?: "Network error", e)
         }
     }

@@ -1,11 +1,11 @@
 package com.crm.v2.telephony.provider
 
 import android.content.Context
+import android.media.AudioManager
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.os.Build
 import android.util.Log
 import com.crm.v2.common.constants.ApiConstants
 import com.crm.v2.telephony.CallState
@@ -35,6 +35,7 @@ class PjsipTelephonyProvider @Inject constructor(
     }
 
     private val pjsipManager = PjsipManager()
+    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
     private val _callState = MutableStateFlow<CallState>(CallState.Idle)
     override val callState: Flow<CallState> = _callState.asStateFlow()
@@ -48,6 +49,9 @@ class PjsipTelephonyProvider @Inject constructor(
     private var currentCallId: Int = -1
     @Volatile private var isInitialized = false
     @Volatile private var isReRegistering = false
+    @Volatile private var isMuted = false
+    @Volatile private var isSpeakerOn = false
+    private var previousAudioMode = AudioManager.MODE_NORMAL
     private var pendingConfig: TelephonyConfig? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
@@ -83,28 +87,23 @@ class PjsipTelephonyProvider @Inject constructor(
             override fun onCallState(callId: Int, state: Int, lastStatus: Int, reason: String) {
                 Log.i(TAG, "onCallState: callId=$callId, state=$state, lastStatus=$lastStatus, reason=$reason")
                 when (state) {
-                    2, 3 -> {
+                    1 -> {
                         _callState.value = CallState.Calling
                     }
-                    4, 5 -> {
+                    2, 3 -> {
                         _callState.value = CallState.Ringing
                     }
-                    6 -> {
-                        if (lastStatus in 200..299 || lastStatus == 0) {
+                    4, 5 -> {
+                        if (_callState.value != CallState.Connected) {
                             _callState.value = CallState.Connected
                             currentCallId = callId
                             _events.tryEmit(TelephonyEvent.CallConnected(callId.toString()))
                             Log.d(TAG, "Call connected")
-                        } else {
-                            Log.w(TAG, "Call state CONFIRMED but lastStatus=$lastStatus ($reason) — treating as disconnected")
-                            _callState.value = CallState.Idle
-                            _events.tryEmit(TelephonyEvent.CallDisconnected(callId.toString(), lastStatus))
-                            currentCallId = -1
                         }
                     }
-                    7 -> {
+                    6 -> {
                         _callState.value = CallState.Idle
-                        _events.tryEmit(TelephonyEvent.CallDisconnected(currentCallId.toString(), lastStatus))
+                        _events.tryEmit(TelephonyEvent.CallDisconnected(callId.toString(), lastStatus))
                         currentCallId = -1
                         Log.d(TAG, "Call disconnected (status=$lastStatus reason=$reason)")
                     }
@@ -188,12 +187,18 @@ class PjsipTelephonyProvider @Inject constructor(
     }
 
     override suspend fun hangup() {
-        if (currentCallId >= 0) {
-            pjsipManager.hangup(currentCallId)
-            Log.d(TAG, "Call hung up")
+        val callIdToHangup = currentCallId
+        if (callIdToHangup >= 0) {
+            pjsipManager.hangup(callIdToHangup)
+            Log.d(TAG, "Call hung up: callId=$callIdToHangup")
+        } else {
+            val activeId = pjsipManager.getActiveCallId()
+            if (activeId >= 0) {
+                pjsipManager.hangup(activeId)
+                Log.d(TAG, "Call hung up via active lookup: callId=$activeId")
+            }
         }
-        currentCallId = -1
-        _callState.value = CallState.Idle
+        resetAudioState()
     }
 
     override suspend fun hold() {
@@ -219,10 +224,18 @@ class PjsipTelephonyProvider @Inject constructor(
     }
 
     override suspend fun mute(enabled: Boolean) {
+        isMuted = enabled
+        if (currentCallId >= 0) {
+            pjsipManager.setMute(currentCallId, enabled)
+        }
         Log.d(TAG, "Mute: $enabled")
     }
 
     override suspend fun speaker(enabled: Boolean) {
+        isSpeakerOn = enabled
+        previousAudioMode = audioManager.mode
+        audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+        audioManager.isSpeakerphoneOn = enabled
         Log.d(TAG, "Speaker: $enabled")
     }
 
@@ -231,6 +244,16 @@ class PjsipTelephonyProvider @Inject constructor(
     }
 
     override fun getCurrentState(): CallState = _callState.value
+
+    private fun resetAudioState() {
+        if (isMuted && currentCallId >= 0) {
+            pjsipManager.setMute(currentCallId, false)
+            isMuted = false
+        }
+        audioManager.isSpeakerphoneOn = false
+        audioManager.mode = previousAudioMode
+        isSpeakerOn = false
+    }
 
     private fun registerNetworkCallback() {
         try {

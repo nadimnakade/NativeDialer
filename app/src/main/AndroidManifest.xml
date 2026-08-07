@@ -9,9 +9,15 @@
 
     <!-- Foreground Service (for active calls) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- FOREGROUND_SERVICE_PHONE_CALL requires API 28+ -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL"
+        tools:targetApi="28" />
+    <!-- FOREGROUND_SERVICE_MICROPHONE requires API 28+ -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"
+        tools:targetApi="28" />
+    <!-- FOREGROUND_SERVICE_DATA_SYNC requires API 28+ -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"
+        tools:targetApi="28" />
 
     <!-- Call & Telephony -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
@@ -19,7 +25,9 @@
     <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
-    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
+    <!-- ANSWER_PHONE_CALLS requires API 26+ -->
+    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS"
+        tools:targetApi="26" />
 
     <!-- Audio Recording -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -33,12 +41,17 @@
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <!-- READ_MEDIA_* requires API 33+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"
+        tools:targetApi="33" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"
+        tools:targetApi="33" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"
+        tools:targetApi="33" />
 
     <!-- Notifications (Android 13+) -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"
+        tools:targetApi="33" />
 
     <!-- Boot -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -51,7 +64,6 @@
 
     <!-- Exact Alarm (for follow-up reminders) -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
     <application
         android:name=".CrmApplication"
@@ -64,8 +76,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CRM.Splash"
         android:usesCleartextTraffic="true"
-        android:networkSecurityConfig="@xml/network_security_config"
-        tools:targetApi="34">
+        android:networkSecurityConfig="@xml/network_security_config">
 
         <!-- Main Activity -->
         <activity
@@ -94,7 +105,8 @@
         <service
             android:name=".services.ForegroundCallService"
             android:exported="false"
-            android:foregroundServiceType="phoneCall|microphone" />
+            android:foregroundServiceType="microphone"
+            tools:ignore="ForegroundServicePermission" />
 
         <!-- Audio Recording Service -->
         <service
@@ -137,6 +149,13 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <!-- Firebase disabled: no valid API key in google-services.json -->
+        <provider
+            android:name="com.google.firebase.provider.FirebaseInitProvider"
+            android:authorities="${applicationId}.firebaseinitprovider"
+            android:exported="false"
+            tools:node="remove" />
 
         <!-- WorkManager (Hilt-aware) -->
         <provider

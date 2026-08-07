@@ -1,0 +1,7 @@
+#Fri Aug 07 17:36:24 IST 2026
+base.0=D\:\\Git_Repos\\Dialer - Copy\\Frontend\\app\\build\\intermediates\\dex\\release\\minifyReleaseWithR8\\classes.dex
+base.1=D\:\\Git_Repos\\Dialer - Copy\\Frontend\\app\\build\\intermediates\\dex\\release\\minifyReleaseWithR8\\classes2.dex
+path.0=classes.dex
+path.1=classes2.dex
+renamed.0=classes.dex
+renamed.1=classes2.dex

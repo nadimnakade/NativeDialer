@@ -18,8 +18,8 @@ android {
 
     defaultConfig {
         applicationId = "com.crm.v2"
-        minSdk = 26
-        targetSdk = 35
+        minSdk = 24
+        targetSdk = 33
         versionCode = 1
         versionName = "2.0.0"
 
@@ -42,7 +42,17 @@ android {
         buildConfigField("String", "CLOUD_EXTENSION_PASSWORD", "\"$cloudExtensionPassword\"")
 
         ndk {
-            abiFilters += listOf("arm64-v8a")
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+        }
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${System.getProperty("user.home")}/.android/debug.keystore"
+            storeFile = file(keystorePath)
+            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "android"
+            keyAlias = System.getenv("KEY_ALIAS") ?: "androiddebugkey"
+            keyPassword = System.getenv("KEY_PASSWORD") ?: "android"
         }
     }
 
@@ -60,7 +70,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -185,4 +195,62 @@ dependencies {
     // Paging
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.paging.compose)
+}
+
+tasks.register("signWithV1V2") {
+    dependsOn("assembleRelease")
+    doLast {
+        val sdkDir = System.getenv("ANDROID_HOME") ?: System.getenv("ANDROID_SDK_ROOT")
+            ?: "${System.getenv("user.home")}/AppData/Local/Android/Sdk"
+
+        val apkDir = layout.buildDirectory.dir("outputs/apk/release").get().asFile
+        val unsignedApk = File(apkDir, "app-release-unsigned.apk")
+        val alignedApk = File(apkDir, "app-release-aligned.apk")
+        val finalApk = File(apkDir, "app-release.apk")
+        val keystoreFile = File(System.getProperty("user.home"), ".android/debug.keystore")
+
+        val buildToolsDir = File(sdkDir, "build-tools")
+        val btVersion = buildToolsDir.listFiles()?.filter { it.isDirectory }?.maxByOrNull { it.name }?.name
+            ?: throw GradleException("No build-tools found in $sdkDir")
+        val buildTools = File(buildToolsDir, btVersion)
+
+        if (!unsignedApk.exists()) {
+            throw GradleException("Unsigned APK not found at ${unsignedApk.absolutePath}")
+        }
+
+        println("Zipaligning unsigned APK...")
+        exec {
+            commandLine(
+                File(buildTools, "zipalign.exe").absolutePath,
+                "-f", "-p", "4",
+                unsignedApk.absolutePath,
+                alignedApk.absolutePath
+            )
+        }
+
+        println("Signing APK with v1+v2+v3...")
+        exec {
+            commandLine(
+                File(buildTools, "apksigner.bat").absolutePath,
+                "sign",
+                "--ks", keystoreFile.absolutePath,
+                "--ks-pass", "pass:android",
+                "--key-pass", "pass:android",
+                "--v1-signing-enabled", "true",
+                "--v2-signing-enabled", "true",
+                "--v3-signing-enabled", "true",
+                "--out", finalApk.absolutePath,
+                alignedApk.absolutePath
+            )
+        }
+
+        println("Verifying signatures...")
+        exec {
+            commandLine(
+                File(buildTools, "apksigner.bat").absolutePath,
+                "verify", "-v", "--print-certs",
+                finalApk.absolutePath
+            )
+        }
+    }
 }

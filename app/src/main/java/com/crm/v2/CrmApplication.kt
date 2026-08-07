@@ -27,6 +27,7 @@ class CrmApplication : Application(), Configuration.Provider {
     }
 
     private fun createNotificationChannels() {
+        // Notification channels require API 26+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationManager = getSystemService(NotificationManager::class.java)
 
