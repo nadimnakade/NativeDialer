@@ -1,13 +1,19 @@
 package com.crm.v2.telephony.provider
 
 import android.content.Context
+import android.media.AudioAttributes
 import android.media.AudioManager
+import android.media.Ringtone
+import android.media.RingtoneManager
+import android.net.Uri
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.os.Build
 import android.util.Log
 import com.crm.v2.common.constants.ApiConstants
+import com.crm.v2.common.log.ApiLogger
 import com.crm.v2.telephony.CallState
 import com.crm.v2.telephony.PjsipManager
 import com.crm.v2.telephony.TelephonyConfig
@@ -55,6 +61,8 @@ class PjsipTelephonyProvider @Inject constructor(
     private var pendingConfig: TelephonyConfig? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
+    private var outgoingRingtone: Ringtone? = null
+
     init {
         registerNetworkCallback()
     }
@@ -63,29 +71,29 @@ class PjsipTelephonyProvider @Inject constructor(
         if (isInitialized) return
 
         _callState.value = CallState.Registering
-        Log.d(TAG, "Registering with PJSIP via UDP...")
+        ApiLogger.event(TAG, "Registering with PJSIP via UDP...")
 
         val callback = object : PjsipManager.Callback {
             override fun onRegState(accId: Int, code: Int, reason: String) {
-                Log.i(TAG, "onRegState: accId=$accId, code=$code, reason=$reason")
+                ApiLogger.event(TAG, "SIP onRegState: accId=$accId code=$code reason=$reason")
                 if (code in 200..299 || code == 0) {
                     _callState.value = CallState.Registered
                     _registrationState.value = true
-                    Log.d(TAG, "SIP Registration successful")
+                    ApiLogger.event(TAG, "SIP Registration successful")
                 } else if (code == 0 && reason.isEmpty()) {
                     _callState.value = CallState.Registered
                     _registrationState.value = true
-                    Log.d(TAG, "SIP Registration successful (code=0)")
+                    ApiLogger.event(TAG, "SIP Registration successful (code=0)")
                 } else {
                     _callState.value = CallState.Error
                     _registrationState.value = false
                     _events.tryEmit(TelephonyEvent.RegistrationFailed("Registration failed: $code $reason"))
-                    Log.e(TAG, "SIP Registration failed: $code $reason")
+                    ApiLogger.error(TAG, "SIP Registration failed: $code $reason")
                 }
             }
 
             override fun onCallState(callId: Int, state: Int, lastStatus: Int, reason: String) {
-                Log.i(TAG, "onCallState: callId=$callId, state=$state, lastStatus=$lastStatus, reason=$reason")
+                ApiLogger.event(TAG, "SIP onCallState: callId=$callId state=$state lastStatus=$lastStatus reason=$reason")
                 when (state) {
                     1 -> {
                         _callState.value = CallState.Calling
@@ -94,34 +102,36 @@ class PjsipTelephonyProvider @Inject constructor(
                         _callState.value = CallState.Ringing
                     }
                     4, 5 -> {
+                        stopOutgoingRingtone()
                         if (_callState.value != CallState.Connected) {
                             _callState.value = CallState.Connected
                             currentCallId = callId
                             _events.tryEmit(TelephonyEvent.CallConnected(callId.toString()))
-                            Log.d(TAG, "Call connected")
+                            ApiLogger.event(TAG, "SIP call connected: callId=$callId")
                         }
                     }
                     6 -> {
+                        stopOutgoingRingtone()
                         _callState.value = CallState.Idle
                         _events.tryEmit(TelephonyEvent.CallDisconnected(callId.toString(), lastStatus))
                         currentCallId = -1
-                        Log.d(TAG, "Call disconnected (status=$lastStatus reason=$reason)")
+                        ApiLogger.event(TAG, "SIP call disconnected: callId=$callId status=$lastStatus reason=$reason")
                     }
                     else -> {
-                        Log.d(TAG, "Call state: $state, lastStatus: $lastStatus, reason: $reason")
+                        ApiLogger.event(TAG, "SIP call state: callId=$callId state=$state lastStatus=$lastStatus reason=$reason")
                     }
                 }
             }
 
             override fun onIncomingCall(accId: Int, callId: Int, remoteUri: String) {
-                Log.i(TAG, "onIncomingCall: accId=$accId, callId=$callId, remoteUri=$remoteUri")
+                ApiLogger.event(TAG, "SIP onIncomingCall: accId=$accId callId=$callId remoteUri=$remoteUri")
                 _callState.value = CallState.Ringing
                 currentCallId = callId
                 _events.tryEmit(TelephonyEvent.IncomingCall(remoteUri, null))
             }
 
             override fun onCallMediaState(callId: Int) {
-                Log.i(TAG, "onCallMediaState: callId=$callId — audio active")
+                ApiLogger.event(TAG, "SIP onCallMediaState: callId=$callId — audio active")
             }
         }
 
@@ -138,25 +148,26 @@ class PjsipTelephonyProvider @Inject constructor(
             sipServer,
             sipPort
         )
-        Log.d(TAG, "UDP transport result: $transportResult")
+        ApiLogger.event(TAG, "UDP transport result: $transportResult")
 
         val sipId = "sip:$sipUsername@$sipServer"
         val regUri = "sip:$sipServer:$sipPort"
         val accountId = pjsipManager.addAccount(sipId, regUri, sipUsername, sipPassword, sipRealm)
-        Log.d(TAG, "Account added: status=$accountId")
+        ApiLogger.event(TAG, "Account added: status=$accountId")
 
         pendingConfig = config
         isInitialized = true
     }
 
     override suspend fun unregister() {
+        stopOutgoingRingtone()
         unregisterNetworkCallback()
         pjsipManager.destroy()
         currentCallId = -1
         isInitialized = false
         _callState.value = CallState.Idle
         _registrationState.value = false
-        Log.d(TAG, "Unregistered")
+        ApiLogger.event(TAG, "Unregistered")
     }
 
     override suspend fun call(number: String) {
@@ -168,34 +179,37 @@ class PjsipTelephonyProvider @Inject constructor(
         val sipServer = ApiConstants.Sip.SERVER
         val sipPort = ApiConstants.Sip.PORT.toIntOrNull() ?: 7065
         val callUri = "sip:$number@$sipServer:$sipPort"
-        Log.d(TAG, "Calling $callUri")
+        ApiLogger.event(TAG, "Calling: $callUri")
 
         _callState.value = CallState.Calling
+        playOutgoingRingtone()
         val status = pjsipManager.makeCall(callUri)
         if (status != 0) {
+            stopOutgoingRingtone()
             _callState.value = CallState.Error
             _events.tryEmit(TelephonyEvent.Error("Call failed: status=$status"))
-            Log.e(TAG, "Make call failed: $status")
+            ApiLogger.error(TAG, "Make call failed: $status")
         }
     }
 
     override suspend fun answer() {
         if (currentCallId >= 0) {
             pjsipManager.answer(currentCallId, 200)
-            Log.d(TAG, "Call answered")
+            ApiLogger.event(TAG, "Call answered: callId=$currentCallId")
         }
     }
 
     override suspend fun hangup() {
+        stopOutgoingRingtone()
         val callIdToHangup = currentCallId
         if (callIdToHangup >= 0) {
             pjsipManager.hangup(callIdToHangup)
-            Log.d(TAG, "Call hung up: callId=$callIdToHangup")
+            ApiLogger.event(TAG, "Hung up: callId=$callIdToHangup")
         } else {
             val activeId = pjsipManager.getActiveCallId()
             if (activeId >= 0) {
                 pjsipManager.hangup(activeId)
-                Log.d(TAG, "Call hung up via active lookup: callId=$activeId")
+                ApiLogger.event(TAG, "Hung up via active lookup: callId=$activeId")
             }
         }
         resetAudioState()
@@ -228,7 +242,7 @@ class PjsipTelephonyProvider @Inject constructor(
         if (currentCallId >= 0) {
             pjsipManager.setMute(currentCallId, enabled)
         }
-        Log.d(TAG, "Mute: $enabled")
+        ApiLogger.event(TAG, "Mute: $enabled")
     }
 
     override suspend fun speaker(enabled: Boolean) {
@@ -236,14 +250,50 @@ class PjsipTelephonyProvider @Inject constructor(
         previousAudioMode = audioManager.mode
         audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
         audioManager.isSpeakerphoneOn = enabled
-        Log.d(TAG, "Speaker: $enabled")
+        ApiLogger.event(TAG, "Speaker: $enabled")
     }
 
     override suspend fun bluetooth(enabled: Boolean) {
-        Log.d(TAG, "Bluetooth: $enabled")
+        ApiLogger.event(TAG, "Bluetooth: $enabled")
     }
 
     override fun getCurrentState(): CallState = _callState.value
+
+    private fun playOutgoingRingtone() {
+        try {
+            if (outgoingRingtone?.isPlaying == true) return
+            val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+            outgoingRingtone = RingtoneManager.getRingtone(context, uri)
+            outgoingRingtone?.let { ring ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    val attrs = AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                    ring.audioAttributes = attrs
+                }
+                ring.isLooping = true
+                ring.play()
+                ApiLogger.event(TAG, "Outgoing ringtone started")
+            }
+        } catch (e: Exception) {
+            ApiLogger.error(TAG, "Failed to play outgoing ringtone: ${e.message}", e)
+        }
+    }
+
+    private fun stopOutgoingRingtone() {
+        try {
+            outgoingRingtone?.let { ring ->
+                if (ring.isPlaying) {
+                    ring.stop()
+                    ApiLogger.event(TAG, "Outgoing ringtone stopped")
+                }
+            }
+            outgoingRingtone = null
+        } catch (e: Exception) {
+            ApiLogger.error(TAG, "Failed to stop outgoing ringtone: ${e.message}", e)
+        }
+    }
 
     private fun resetAudioState() {
         if (isMuted && currentCallId >= 0) {
@@ -264,22 +314,22 @@ class PjsipTelephonyProvider @Inject constructor(
 
             networkCallback = object : ConnectivityManager.NetworkCallback() {
                 override fun onAvailable(network: Network) {
-                    Log.i(TAG, "Network available — re-registering SIP")
+                    ApiLogger.event(TAG, "Network available — re-registering SIP")
                     if (isInitialized && _registrationState.value.not()) {
                         reRegister()
                     }
                 }
 
                 override fun onLost(network: Network) {
-                    Log.w(TAG, "Network lost — SIP may be unreachable")
+                    ApiLogger.event(TAG, "Network lost — SIP may be unreachable")
                     _registrationState.value = false
                 }
             }
 
             connectivityManager.registerNetworkCallback(networkRequest, networkCallback!!)
-            Log.d(TAG, "Network callback registered")
+            ApiLogger.event(TAG, "Network callback registered")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to register network callback: ${e.message}")
+            ApiLogger.error(TAG, "Failed to register network callback: ${e.message}")
         }
     }
 
@@ -289,17 +339,17 @@ class PjsipTelephonyProvider @Inject constructor(
                 val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
                 connectivityManager.unregisterNetworkCallback(networkCallback!!)
                 networkCallback = null
-                Log.d(TAG, "Network callback unregistered")
+                ApiLogger.event(TAG, "Network callback unregistered")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to unregister network callback: ${e.message}")
+            ApiLogger.error(TAG, "Failed to unregister network callback: ${e.message}")
         }
     }
 
     private fun reRegister() {
         val config = pendingConfig ?: return
         if (isReRegistering) {
-            Log.d(TAG, "Re-registration already in progress, skipping")
+            ApiLogger.event(TAG, "Re-registration already in progress, skipping")
             return
         }
         isReRegistering = true
@@ -315,10 +365,10 @@ class PjsipTelephonyProvider @Inject constructor(
                     isReRegistering = false
                 }
             }
-            Log.i(TAG, "Re-registration initiated")
+            ApiLogger.event(TAG, "Re-registration initiated")
         } catch (e: Exception) {
             isReRegistering = false
-            Log.e(TAG, "Re-registration failed: ${e.message}")
+            ApiLogger.error(TAG, "Re-registration failed: ${e.message}")
         }
     }
 }

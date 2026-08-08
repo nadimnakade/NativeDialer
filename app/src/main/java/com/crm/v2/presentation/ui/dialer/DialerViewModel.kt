@@ -62,7 +62,6 @@ class DialerViewModel @Inject constructor(
     private var autoDialJob: Job? = null
     private var contactJob: Job? = null
     private var callStartTime: Long = 0L
-    private var lastCalledIndex: Int = -1
 
     init {
         viewModelScope.launch {
@@ -243,7 +242,6 @@ class DialerViewModel @Inject constructor(
     fun stopAutoDial() {
         autoDialJob?.cancel()
         autoDialJob = null
-        lastCalledIndex = -1
         _uiState.update { it.copy(isAutoDialing = false, currentLead = null, showUpdateStatus = false, isMuted = false, isSpeakerOn = false, isOnHold = false) }
         viewModelScope.launch {
             if (telephonyManager.getCurrentState().isActive) {
@@ -298,7 +296,6 @@ class DialerViewModel @Inject constructor(
     }
 
     fun callLead(lead: DialerRecord) {
-        lastCalledIndex = _uiState.value.dialerQueue.indexOfFirst { it.key == lead.key }
         _uiState.update { it.copy(currentLead = lead, showUpdateStatus = false, callDuration = 0) }
         callStartTime = 0L
         manualCall(lead.contact)
@@ -352,12 +349,11 @@ class DialerViewModel @Inject constructor(
         autoDialJob?.cancel()
         autoDialJob = viewModelScope.launch {
             val queue = _uiState.value.dialerQueue
-            val nextIndex = lastCalledIndex + 1
+            val lead = queue.firstOrNull()
 
-            if (nextIndex < queue.size) {
+            if (lead != null) {
                 delay(_uiState.value.autoDialInterval * 1000L)
-                val lead = queue[nextIndex]
-                _uiState.update { it.copy(currentLead = lead, showUpdateStatus = false) }
+                _uiState.update { it.copy(currentLead = lead, showUpdateStatus = false, callDuration = 0) }
                 manualCall(lead.contact)
             } else {
                 _uiState.update { it.copy(isAutoDialing = false, currentLead = null, showUpdateStatus = false) }

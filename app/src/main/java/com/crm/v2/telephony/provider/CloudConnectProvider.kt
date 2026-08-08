@@ -1,8 +1,12 @@
 package com.crm.v2.telephony.provider
 
 import android.content.Context
+import android.media.AudioManager
+import android.media.Ringtone
+import android.media.RingtoneManager
 import android.util.Log
 import com.crm.v2.common.constants.ApiConstants
+import com.crm.v2.common.log.ApiLogger
 import com.crm.v2.data.network.dto.cloudconnect.CallLogRequest
 import com.crm.v2.data.network.dto.cloudconnect.CallLogEntry
 import com.crm.v2.data.network.dto.cloudconnect.Click2CallRequest
@@ -58,6 +62,10 @@ class CloudConnectProvider @Inject constructor(
     private var currentConfig: TelephonyConfig? = null
     private var currentUniqueToken: String = ""
 
+    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private var outgoingRingtone: Ringtone? = null
+    private var previousAudioMode = AudioManager.MODE_NORMAL
+
     override suspend fun register(config: TelephonyConfig) {
         currentConfig = config
         _callState.value = CallState.Registered
@@ -66,6 +74,7 @@ class CloudConnectProvider @Inject constructor(
     }
 
     override suspend fun unregister() {
+        stopOutgoingRingtone()
         currentConfig = null
         currentUniqueToken = ""
         _callState.value = CallState.Idle
@@ -90,7 +99,7 @@ class CloudConnectProvider @Inject constructor(
             )
 
             val url = ApiConstants.CloudConnect.BASE_URL + ApiConstants.CloudConnect.CLICK_2_CALL
-            Log.d(TAG, "Calling $number via CloudConnect: $url")
+            ApiLogger.request(TAG, "POST", url, jsonBody)
 
             val request = Request.Builder()
                 .url(url)
@@ -100,7 +109,7 @@ class CloudConnectProvider @Inject constructor(
             withContext(Dispatchers.IO) {
                 client.newCall(request).execute().use { response ->
                     val bodyString = response.body?.string() ?: ""
-                    Log.d(TAG, "CloudConnect response: ${response.code} - $bodyString")
+                    ApiLogger.response(TAG, response.code, url, bodyString)
 
                     if (response.isSuccessful) {
                         val jsonResponse = JSONObject(bodyString)
@@ -109,25 +118,26 @@ class CloudConnectProvider @Inject constructor(
 
                         if (status.equals("SUCCESS", ignoreCase = true)) {
                             _callState.value = CallState.Ringing
+                            playOutgoingRingtone()
                             _events.tryEmit(TelephonyEvent.CallConnected(currentUniqueToken))
-                            Log.d(TAG, "Call initiated successfully. unique_token=$currentUniqueToken")
+                            ApiLogger.event(TAG, "Cloud call initiated: unique_token=$currentUniqueToken to=$number")
                         } else {
                             _callState.value = CallState.Error
                             val message = jsonResponse.optString("message", "Unknown error")
                             _events.tryEmit(TelephonyEvent.Error("Cloud call failed: $message"))
-                            Log.e(TAG, "Call failed: $status - $message")
+                            ApiLogger.error(TAG, "Cloud call failed: status=$status message=$message")
                         }
                     } else {
                         _callState.value = CallState.Error
                         _events.tryEmit(TelephonyEvent.Error("Cloud API error: ${response.code}"))
-                        Log.e(TAG, "API error: ${response.code}")
+                        ApiLogger.error(TAG, "Cloud API HTTP error: ${response.code}")
                     }
                 }
             }
         } catch (e: Exception) {
             _callState.value = CallState.Error
             _events.tryEmit(TelephonyEvent.Error("Cloud call failed: ${e::class.simpleName}: ${e.message}"))
-            Log.e(TAG, "Call exception", e)
+            ApiLogger.error(TAG, "Cloud call exception: ${e.message}", e)
         }
     }
 
@@ -136,6 +146,7 @@ class CloudConnectProvider @Inject constructor(
     }
 
     override suspend fun hangup() {
+        stopOutgoingRingtone()
         val wasActive = _callState.value.isActive
         val duration = 0
         _callState.value = CallState.Idle
@@ -181,6 +192,38 @@ class CloudConnectProvider @Inject constructor(
     }
 
     override fun getCurrentState(): CallState = _callState.value
+
+    private fun playOutgoingRingtone() {
+        try {
+            if (outgoingRingtone?.isPlaying == true) return
+            val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+            outgoingRingtone = RingtoneManager.getRingtone(context, uri)
+            outgoingRingtone?.let { ring ->
+                previousAudioMode = audioManager.mode
+                audioManager.mode = AudioManager.MODE_RINGTONE
+                ring.isLooping = true
+                ring.play()
+                ApiLogger.event(TAG, "Outgoing ringtone started")
+            }
+        } catch (e: Exception) {
+            ApiLogger.error(TAG, "Failed to play outgoing ringtone: ${e.message}", e)
+        }
+    }
+
+    private fun stopOutgoingRingtone() {
+        try {
+            outgoingRingtone?.let { ring ->
+                if (ring.isPlaying) {
+                    ring.stop()
+                    ApiLogger.event(TAG, "Outgoing ringtone stopped")
+                }
+            }
+            outgoingRingtone = null
+            audioManager.mode = previousAudioMode
+        } catch (e: Exception) {
+            ApiLogger.error(TAG, "Failed to stop outgoing ringtone: ${e.message}", e)
+        }
+    }
 
     fun getCurrentUniqueToken(): String = currentUniqueToken
 

@@ -34,7 +34,7 @@ object ApiConstants {
         const val GET_DATA = "Pickup/GetDialerData"
         const val GET_NOT_UPDATED = "Pickup/GetDialerNotUpdatedData"
         const val UPDATE_STATUS = "Pickup/UpdateDialingStatus"
-        const val UPDATE = "Dialer/update"
+        const val UPDATE = "Pickup/UpdateDialer"
         const val INSERT_LEAD = "Pickup/InsertLeadInfo"
         const val ADD_LEAD = "Pickup/AddLead"
         const val GET_LEAD = "Pickup/GetLead"

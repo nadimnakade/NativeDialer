@@ -110,7 +110,7 @@ public final class ApiConstants {
         @org.jetbrains.annotations.NotNull()
         public static final java.lang.String UPDATE_STATUS = "Pickup/UpdateDialingStatus";
         @org.jetbrains.annotations.NotNull()
-        public static final java.lang.String UPDATE = "Dialer/update";
+        public static final java.lang.String UPDATE = "Pickup/UpdateDialer";
         @org.jetbrains.annotations.NotNull()
         public static final java.lang.String INSERT_LEAD = "Pickup/InsertLeadInfo";
         @org.jetbrains.annotations.NotNull()

@@ -1,0 +1,58 @@
+[
+    {
+        "merged": "com.crm.v2.app-debug-93:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.crm.v2.app-main-95:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "com.crm.v2.app-debug-93:/xml_data_extraction_rules.xml.flat",
+        "source": "com.crm.v2.app-main-95:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.crm.v2.app-debug-93:/font_poppins_light.ttf.flat",
+        "source": "com.crm.v2.app-main-95:/font/poppins_light.ttf"
+    },
+    {
+        "merged": "com.crm.v2.app-debug-93:/drawable_ic_launcher_background.xml.flat",
+        "source": "com.crm.v2.app-main-95:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "com.crm.v2.app-debug-93:/font_poppins_semibold.ttf.flat",
+        "source": "com.crm.v2.app-main-95:/font/poppins_semibold.ttf"
+    },
+    {
+        "merged": "com.crm.v2.app-debug-93:/font_outfit.ttf.flat",
+        "source": "com.crm.v2.app-main-95:/font/outfit.ttf"
+    },
+    {
+        "merged": "com.crm.v2.app-debug-93:/xml_backup_rules.xml.flat",
+        "source": "com.crm.v2.app-main-95:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "com.crm.v2.app-debug-93:/font_poppins_medium.ttf.flat",
+        "source": "com.crm.v2.app-main-95:/font/poppins_medium.ttf"
+    },
+    {
+        "merged": "com.crm.v2.app-debug-93:/font_poppins_bold.ttf.flat",
+        "source": "com.crm.v2.app-main-95:/font/poppins_bold.ttf"
+    },
+    {
+        "merged": "com.crm.v2.app-debug-93:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.crm.v2.app-main-95:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.crm.v2.app-debug-93:/font_poppins_thin.ttf.flat",
+        "source": "com.crm.v2.app-main-95:/font/poppins_thin.ttf"
+    },
+    {
+        "merged": "com.crm.v2.app-debug-93:/xml_network_security_config.xml.flat",
+        "source": "com.crm.v2.app-main-95:/xml/network_security_config.xml"
+    },
+    {
+        "merged": "com.crm.v2.app-debug-93:/font_poppins_regular.ttf.flat",
+        "source": "com.crm.v2.app-main-95:/font/poppins_regular.ttf"
+    },
+    {
+        "merged": "com.crm.v2.app-debug-93:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.crm.v2.app-main-95:/mipmap-anydpi-v26/ic_launcher.xml"
+    }
+]

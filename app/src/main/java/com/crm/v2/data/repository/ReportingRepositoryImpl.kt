@@ -5,6 +5,7 @@ import com.crm.v2.data.network.api.PickupApi
 import com.crm.v2.data.network.dto.pickup.DashboardCounterDto
 import com.crm.v2.domain.model.*
 import com.crm.v2.domain.repository.ReportingRepository
+import kotlinx.serialization.json.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -83,11 +84,14 @@ class ReportingRepositoryImpl @Inject constructor(
         return try {
             val response = pickupApi.getIncentive(userKey)
             if (response.isSuccessful) {
-                val data = response.body()?.mapNotNull { map ->
-                    val key = map["Key"]?.toString() ?: return@mapNotNull null
-                    val value = (map["Value"] as? Number)?.toDouble() ?: 0.0
+                val bodyString = response.body()?.string() ?: "[]"
+                val jsonArray = Json.parseToJsonElement(bodyString).jsonArray
+                val data = jsonArray.mapNotNull { element ->
+                    val map = element.jsonObject
+                    val key = map["Key"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null
+                    val value = map["Value"]?.jsonPrimitive?.doubleOrNull ?: 0.0
                     PerformanceData(key, value)
-                } ?: emptyList()
+                }
                 Resource.Success(data)
             } else Resource.Error("Failed to load performance")
         } catch (e: Exception) {
@@ -108,7 +112,17 @@ class ReportingRepositoryImpl @Inject constructor(
         return try {
             val response = pickupApi.getApplications(userKey)
             if (response.isSuccessful) {
-                Resource.Success(response.body() ?: emptyList())
+                val bodyString = response.body()?.string() ?: "[]"
+                val jsonArray = Json.parseToJsonElement(bodyString).jsonArray
+                val result = jsonArray.map { element ->
+                    element.jsonObject.mapValues { entry ->
+                        when (val v = entry.value) {
+                            is JsonPrimitive -> v.content
+                            else -> v.toString()
+                        }
+                    }
+                }
+                Resource.Success(result)
             } else Resource.Error("Failed to load applications")
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)

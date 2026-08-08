@@ -105,11 +105,11 @@ fun ActiveCallScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -118,7 +118,7 @@ fun ActiveCallScreen(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(96.dp)
+                        .size(80.dp)
                         .clip(CircleShape)
                         .background(statusColor.copy(alpha = 0.12f)),
                     contentAlignment = Alignment.Center,
@@ -127,18 +127,18 @@ fun ActiveCallScreen(
                         Icons.Filled.Person,
                         contentDescription = null,
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(40.dp)
                             .scale(if (callState is CallState.Calling) pulseScale else 1f),
                         tint = statusColor,
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 if (clientName.isNotEmpty()) {
                     Text(
                         text = clientName,
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         textAlign = TextAlign.Center,
                     )
@@ -147,13 +147,13 @@ fun ActiveCallScreen(
 
                 Text(
                     text = number,
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Surface(
                     shape = MaterialTheme.shapes.medium,
@@ -161,7 +161,7 @@ fun ActiveCallScreen(
                 ) {
                     Text(
                         text = statusLabel,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                         color = statusColor,
@@ -169,10 +169,10 @@ fun ActiveCallScreen(
                 }
 
                 if (isCallActive) {
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = timerText,
-                        style = MaterialTheme.typography.displaySmall.copy(fontSize = 48.sp),
+                        style = MaterialTheme.typography.displaySmall.copy(fontSize = 40.sp),
                         fontWeight = FontWeight.Thin,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
@@ -207,14 +207,14 @@ fun ActiveCallScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
                     onClick = {
                         if (callState.isActive) onHangup()
                         else onNavigateToUpdateStatus()
                     },
-                    modifier = Modifier.size(72.dp),
+                    modifier = Modifier.size(64.dp),
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error,
@@ -224,20 +224,20 @@ fun ActiveCallScreen(
                     Icon(
                         if (callState.isActive) Icons.Filled.CallEnd else Icons.Filled.NavigateNext,
                         contentDescription = if (callState.isActive) "Hangup" else "Next",
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier.size(28.dp),
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = if (callState.isActive) "End Call" else "Continue",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -262,7 +262,7 @@ private fun CallControlButton(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(72.dp),
+        modifier = Modifier.width(64.dp),
     ) {
         FilledTonalIconButton(
             onClick = onClick,
@@ -270,11 +270,11 @@ private fun CallControlButton(
                 containerColor = containerColor,
                 contentColor = contentColor,
             ),
-            modifier = Modifier.size(52.dp),
+            modifier = Modifier.size(48.dp),
         ) {
-            Icon(icon, contentDescription = label, modifier = Modifier.size(24.dp))
+            Icon(icon, contentDescription = label, modifier = Modifier.size(22.dp))
         }
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             label,
             style = MaterialTheme.typography.labelSmall,

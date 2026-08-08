@@ -46,6 +46,7 @@ fun DialerScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         content = { padding ->
             Box(modifier = Modifier.padding(padding)) {
                 LoadingOverlay(
@@ -799,87 +800,94 @@ private fun ManualDialTab(
     onClear: () -> Unit,
     onCall: (String) -> Unit,
 ) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
+        Column(
+            modifier = Modifier.align(Alignment.TopCenter),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(modifier = Modifier.height(4.dp))
 
-        Text(
-            text = phoneNumber,
-            style = MaterialTheme.typography.displayMedium,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = if (phoneNumber.isEmpty()) "Enter a number to dial" else "",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        val keys = listOf(
-            listOf("1", "2", "3"),
-            listOf("4", "5", "6"),
-            listOf("7", "8", "9"),
-            listOf("*", "0", "#"),
-        )
-
-        keys.forEach { row ->
-            Row(
+            Text(
+                text = phoneNumber,
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                row.forEach { key ->
-                    DialKey(
-                        key = key,
-                        onPress = { onNumberChanged(phoneNumber + key) },
-                    )
+                textAlign = TextAlign.Center,
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = if (phoneNumber.isEmpty()) "Enter a number to dial" else "",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+
+            val keys = listOf(
+                listOf("1", "2", "3"),
+                listOf("4", "5", "6"),
+                listOf("7", "8", "9"),
+                listOf("*", "0", "#"),
+            )
+
+            keys.forEach { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                ) {
+                    row.forEach { key ->
+                        DialKey(
+                            key = key,
+                            onPress = { onNumberChanged(phoneNumber + key) },
+                        )
+                    }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                DialKey(
+                    key = "",
+                    isBackspace = true,
+                    onPress = { onNumberChanged(phoneNumber.dropLast(1)) },
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center,
+        Column(
+            modifier = Modifier.align(Alignment.BottomCenter),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            DialKey(
-                key = "",
-                isBackspace = true,
-                onPress = { onNumberChanged(phoneNumber.dropLast(1)) },
-            )
+            Button(
+                onClick = { onCall(phoneNumber) },
+                enabled = phoneNumber.trim().length >= 6,
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape),
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF10B981),
+                    contentColor = Color.White,
+                ),
+            ) {
+                Icon(
+                    Icons.Filled.Phone,
+                    contentDescription = "Call",
+                    modifier = Modifier.size(24.dp),
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
         }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Button(
-            onClick = { onCall(phoneNumber) },
-            enabled = phoneNumber.trim().length >= 6,
-            modifier = Modifier
-                .size(64.dp)
-                .clip(CircleShape),
-            shape = CircleShape,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF10B981),
-                contentColor = Color.White,
-            ),
-        ) {
-            Icon(
-                Icons.Filled.Phone,
-                contentDescription = "Call",
-                modifier = Modifier.size(28.dp),
-            )
-        }
-        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
@@ -889,7 +897,7 @@ private fun DialKey(
     key: String,
     onPress: () -> Unit,
     isBackspace: Boolean = false,
-    modifier: Modifier = Modifier.size(64.dp),
+    modifier: Modifier = Modifier.size(56.dp),
 ) {
     Column(
         modifier = modifier

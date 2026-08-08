@@ -14510,6 +14510,9 @@ com.crm.v2.common.constants.StatusOption:
     public final java.lang.String component2()
     public final com.crm.v2.common.constants.StatusOption copy(java.lang.String,java.lang.String)
     public static synthetic com.crm.v2.common.constants.StatusOption copy$default(com.crm.v2.common.constants.StatusOption,java.lang.String,java.lang.String,int,java.lang.Object)
+com.crm.v2.common.log.ApiLogger:
+    private static final java.lang.String TAG
+    public static synthetic void response$default(com.crm.v2.common.log.ApiLogger,java.lang.String,int,java.lang.String,java.lang.String,int,java.lang.Object)
 com.crm.v2.common.result.Resource$Error:
     public final java.lang.String component1()
     public final java.lang.Throwable component2()
@@ -14610,6 +14613,7 @@ com.crm.v2.data.repository.ContactRepositoryImpl_Factory
 com.crm.v2.data.repository.DailyLoginRepositoryImpl_Factory
 com.crm.v2.data.repository.DialerRepositoryImpl:
     public java.lang.Object stopAutoDial(kotlin.coroutines.Continuation)
+com.crm.v2.data.repository.DialerRepositoryImplKt
 com.crm.v2.data.repository.DialerRepositoryImpl_Factory
 com.crm.v2.data.repository.DocumentRepositoryImpl_Factory
 com.crm.v2.data.repository.LeadRepositoryImpl$getLeadCount$1
@@ -34967,7 +34971,6 @@ kotlinx.serialization.json.Json:
     public final synthetic java.lang.Object decodeFromString(java.lang.String)
     public final kotlinx.serialization.json.JsonElement encodeToJsonElement(kotlinx.serialization.SerializationStrategy,java.lang.Object)
     public static synthetic void get_schemaCache$kotlinx_serialization_json$annotations()
-    public final kotlinx.serialization.json.JsonElement parseToJsonElement(java.lang.String)
 kotlinx.serialization.json.JsonArray:
     public void add(int,kotlinx.serialization.json.JsonElement)
     public boolean add(kotlinx.serialization.json.JsonElement)
@@ -35038,12 +35041,9 @@ kotlinx.serialization.json.JsonElementKt:
     public static final kotlinx.serialization.json.JsonPrimitive JsonPrimitive-xj2QHRw(short)
     public static final kotlinx.serialization.json.JsonPrimitive JsonUnquotedLiteral(java.lang.String)
     public static final boolean getBoolean(kotlinx.serialization.json.JsonPrimitive)
-    public static final java.lang.Double getDoubleOrNull(kotlinx.serialization.json.JsonPrimitive)
     public static final java.lang.Float getFloatOrNull(kotlinx.serialization.json.JsonPrimitive)
     public static final java.lang.Integer getIntOrNull(kotlinx.serialization.json.JsonPrimitive)
-    public static final kotlinx.serialization.json.JsonArray getJsonArray(kotlinx.serialization.json.JsonElement)
     public static final kotlinx.serialization.json.JsonNull getJsonNull(kotlinx.serialization.json.JsonElement)
-    public static final kotlinx.serialization.json.JsonObject getJsonObject(kotlinx.serialization.json.JsonElement)
     public static final java.lang.Long getLongOrNull(kotlinx.serialization.json.JsonPrimitive)
     private static final java.lang.Object mapExceptions(kotlin.jvm.functions.Function0)
     private static final java.lang.Object mapExceptionsToNull(kotlin.jvm.functions.Function0)
@@ -68597,6 +68597,10 @@ com.crm.v2.common.constants.StatusOption:
     static void <clinit>()
     public static java.lang.String getLabel()
     public final java.lang.String getValue()
+com.crm.v2.common.log.ApiLogger:
+    public static final int $stable
+    public static final com.crm.v2.common.log.ApiLogger INSTANCE
+    public static void request()
 com.crm.v2.common.result.Resource$Error:
     public static final int $stable
     static void <clinit>()
@@ -70712,7 +70716,6 @@ com.crm.v2.telephony.provider.PjsipTelephonyProvider$reRegister$1:
 com.crm.v2.telephony.provider.PjsipTelephonyProvider:
     public static final int $stable
     public static final com.crm.v2.telephony.provider.PjsipTelephonyProvider$Companion Companion
-    public final android.content.Context context
     public volatile boolean isSpeakerOn
     public com.crm.v2.telephony.provider.PjsipTelephonyProvider$registerNetworkCallback$1 networkCallback
     public final kotlinx.coroutines.flow.Flow registrationState
@@ -70722,6 +70725,7 @@ com.crm.v2.telephony.provider.PjsipTelephonyProvider:
     public final kotlinx.coroutines.flow.Flow getEvents()
     public final java.lang.Object hold()
     public final java.lang.Object mute()
+    public static void playOutgoingRingtone()
     public static void reRegister()
     public static void registerNetworkCallback()
     public static void resetAudioState()
@@ -77116,6 +77120,7 @@ kotlin.collections.IndexingIterator:
 kotlin.collections.MapsKt
 kotlin.collections.MapsKt__MapsKt:
     public static java.util.Map emptyMap()
+    public static varargs java.util.LinkedHashMap mutableMapOf(kotlin.Pair[])
     public static java.util.LinkedHashMap plus(java.util.Map,java.util.Map)
     public static final void toMap(java.lang.Iterable,java.util.LinkedHashMap)
     public static final void toMap(kotlin.Pair[],java.util.LinkedHashMap)
@@ -78781,11 +78786,11 @@ kotlinx.serialization.json.ClassDiscriminatorMode:
     public static final synthetic kotlin.enums.EnumEntries $ENTRIES
     public static final enum kotlinx.serialization.json.ClassDiscriminatorMode ALL_JSON_OBJECTS
 kotlinx.serialization.json.Json:
-    public abstract java.lang.Object decodeFromString()
     public abstract java.lang.String encodeToString()
     public abstract kotlinx.serialization.json.JsonConfiguration getConfiguration()
     public abstract kotlinx.serialization.modules.SerialModuleImpl getSerializersModule()
     public abstract kotlinx.serialization.json.internal.DescriptorSchemaCache get_schemaCache$kotlinx_serialization_json()
+    public abstract kotlinx.serialization.json.JsonElement parseToJsonElement()
 kotlinx.serialization.json.JsonArray:
     public static boolean contains$5()
     public final kotlinx.serialization.json.JsonElement get(int)
@@ -78818,7 +78823,6 @@ kotlinx.serialization.json.JsonConfiguration:
 kotlinx.serialization.json.JsonDecoder:
     public abstract kotlinx.serialization.json.Json getJson()
 kotlinx.serialization.json.JsonElementKt:
-    public static final java.lang.String getContentOrNull(kotlinx.serialization.json.JsonPrimitive)
     public static final int getInt(kotlinx.serialization.json.JsonPrimitive)
 kotlinx.serialization.json.JsonElementSerializer:
     public static kotlinx.serialization.json.JsonElement deserialize()

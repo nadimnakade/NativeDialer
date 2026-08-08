@@ -1,0 +1,95 @@
+com.crm.v2.app-lifecycle-runtime-ktx-release-0 C:\Users\nadim\.gradle\caches\8.9\transforms\0120d5b6a9b8951ce98d162617919dca\transformed\lifecycle-runtime-ktx-release\res
+com.crm.v2.app-biometric-1.2.0-alpha05-1 C:\Users\nadim\.gradle\caches\8.9\transforms\081656afd978b154112ddb57154e5fb5\transformed\biometric-1.2.0-alpha05\res
+com.crm.v2.app-play-services-measurement-api-21.6.1-2 C:\Users\nadim\.gradle\caches\8.9\transforms\0990856cbda3893408295b7d2e29ca55\transformed\play-services-measurement-api-21.6.1\res
+com.crm.v2.app-navigation-common-2.8.5-3 C:\Users\nadim\.gradle\caches\8.9\transforms\0d590ad6651d30c243191e02189bd8bf\transformed\navigation-common-2.8.5\res
+com.crm.v2.app-androidsvg-aar-1.4-4 C:\Users\nadim\.gradle\caches\8.9\transforms\0fffe5c4e09876beb464f8c7c194c66b\transformed\androidsvg-aar-1.4\res
+com.crm.v2.app-lifecycle-process-2.8.7-5 C:\Users\nadim\.gradle\caches\8.9\transforms\118081c1c30cdfba40b86179553344c4\transformed\lifecycle-process-2.8.7\res
+com.crm.v2.app-appcompat-resources-1.6.1-6 C:\Users\nadim\.gradle\caches\8.9\transforms\13a286bfc96ea9e7e54604cba46876e5\transformed\appcompat-resources-1.6.1\res
+com.crm.v2.app-startup-runtime-1.1.1-7 C:\Users\nadim\.gradle\caches\8.9\transforms\13fa3397ce0e42565f84a953432093d5\transformed\startup-runtime-1.1.1\res
+com.crm.v2.app-annotation-experimental-1.4.1-8 C:\Users\nadim\.gradle\caches\8.9\transforms\15f0484f65b7590af42387b21b1c8801\transformed\annotation-experimental-1.4.1\res
+com.crm.v2.app-ui-graphics-release-9 C:\Users\nadim\.gradle\caches\8.9\transforms\1a6f440787d22b99041f2079c681c2c6\transformed\ui-graphics-release\res
+com.crm.v2.app-foundation-layout-release-10 C:\Users\nadim\.gradle\caches\8.9\transforms\1cf9d478099176d606c1fd12b78e94fd\transformed\foundation-layout-release\res
+com.crm.v2.app-runtime-release-11 C:\Users\nadim\.gradle\caches\8.9\transforms\1efd281c1194d64e76d3f07e05eb27e7\transformed\runtime-release\res
+com.crm.v2.app-lifecycle-viewmodel-compose-release-12 C:\Users\nadim\.gradle\caches\8.9\transforms\1f1fbea7815cb56ef357f15bc2c43162\transformed\lifecycle-viewmodel-compose-release\res
+com.crm.v2.app-navigation-common-ktx-2.8.5-13 C:\Users\nadim\.gradle\caches\8.9\transforms\1f3f959f63a7f995c7b9ef23fc70079d\transformed\navigation-common-ktx-2.8.5\res
+com.crm.v2.app-material-release-14 C:\Users\nadim\.gradle\caches\8.9\transforms\1fa64f61ae42f04af562e8bfcd351ade\transformed\material-release\res
+com.crm.v2.app-paging-compose-release-15 C:\Users\nadim\.gradle\caches\8.9\transforms\2226494daa189088d922d04692b9a302\transformed\paging-compose-release\res
+com.crm.v2.app-ui-tooling-preview-release-16 C:\Users\nadim\.gradle\caches\8.9\transforms\28ce77b1de0fc310629f7d2417f4df36\transformed\ui-tooling-preview-release\res
+com.crm.v2.app-activity-compose-1.9.3-17 C:\Users\nadim\.gradle\caches\8.9\transforms\2a5e828d8fa410c69ad3833053c49c74\transformed\activity-compose-1.9.3\res
+com.crm.v2.app-room-runtime-2.6.1-18 C:\Users\nadim\.gradle\caches\8.9\transforms\2bcc280e8a300cf927a427579c273108\transformed\room-runtime-2.6.1\res
+com.crm.v2.app-material-icons-extended-release-19 C:\Users\nadim\.gradle\caches\8.9\transforms\2c770dad3b0374cfdd8e398e6d5be071\transformed\material-icons-extended-release\res
+com.crm.v2.app-savedstate-ktx-1.2.1-20 C:\Users\nadim\.gradle\caches\8.9\transforms\34358a1879a2f4a4330887767ca03551\transformed\savedstate-ktx-1.2.1\res
+com.crm.v2.app-lifecycle-viewmodel-savedstate-2.8.7-21 C:\Users\nadim\.gradle\caches\8.9\transforms\353994251f78cdeb1ce12f46f1904a2e\transformed\lifecycle-viewmodel-savedstate-2.8.7\res
+com.crm.v2.app-lifecycle-service-2.8.7-22 C:\Users\nadim\.gradle\caches\8.9\transforms\384e9bca17c1c99f36e7d864e3d397a1\transformed\lifecycle-service-2.8.7\res
+com.crm.v2.app-lifecycle-runtime-release-23 C:\Users\nadim\.gradle\caches\8.9\transforms\3da1cabb075ce5fb09a06ae2b5596546\transformed\lifecycle-runtime-release\res
+com.crm.v2.app-recyclerview-1.2.1-24 C:\Users\nadim\.gradle\caches\8.9\transforms\3ed76505a689b0a967bb87ea4ce7c4b8\transformed\recyclerview-1.2.1\res
+com.crm.v2.app-ui-tooling-release-25 C:\Users\nadim\.gradle\caches\8.9\transforms\3fd14044e9116a8e170f982c721310b7\transformed\ui-tooling-release\res
+com.crm.v2.app-lifecycle-livedata-core-2.8.7-26 C:\Users\nadim\.gradle\caches\8.9\transforms\4247cba8a19b53745d3470f6d2f0708b\transformed\lifecycle-livedata-core-2.8.7\res
+com.crm.v2.app-navigation-runtime-2.8.5-27 C:\Users\nadim\.gradle\caches\8.9\transforms\424edd864e14b5fa62ca1f8b1886d884\transformed\navigation-runtime-2.8.5\res
+com.crm.v2.app-activity-ktx-1.9.3-28 C:\Users\nadim\.gradle\caches\8.9\transforms\52c4d9a02ea70dec96ef2d411985e94a\transformed\activity-ktx-1.9.3\res
+com.crm.v2.app-ads-adservices-java-1.0.0-beta05-29 C:\Users\nadim\.gradle\caches\8.9\transforms\52f7e0113e860971f2900b433be0b2c4\transformed\ads-adservices-java-1.0.0-beta05\res
+com.crm.v2.app-play-services-base-18.0.1-30 C:\Users\nadim\.gradle\caches\8.9\transforms\58ab2dacc5418d2602684c551e4f42ff\transformed\play-services-base-18.0.1\res
+com.crm.v2.app-core-splashscreen-1.0.1-31 C:\Users\nadim\.gradle\caches\8.9\transforms\593a9aab598d1f8b165c3f6ff9718dc0\transformed\core-splashscreen-1.0.1\res
+com.crm.v2.app-work-runtime-ktx-2.10.0-32 C:\Users\nadim\.gradle\caches\8.9\transforms\59626668c86293bfd654ccbb8d82be7e\transformed\work-runtime-ktx-2.10.0\res
+com.crm.v2.app-sqlite-framework-2.4.0-33 C:\Users\nadim\.gradle\caches\8.9\transforms\5986747db44bf47be06757e01b07b958\transformed\sqlite-framework-2.4.0\res
+com.crm.v2.app-savedstate-1.2.1-34 C:\Users\nadim\.gradle\caches\8.9\transforms\59b2d744fd5825d8f9af7bd89ca1682b\transformed\savedstate-1.2.1\res
+com.crm.v2.app-paging-runtime-3.3.5-35 C:\Users\nadim\.gradle\caches\8.9\transforms\5e161d034183c3bd65351f4c568e7ad7\transformed\paging-runtime-3.3.5\res
+com.crm.v2.app-appcompat-1.6.1-36 C:\Users\nadim\.gradle\caches\8.9\transforms\61fdbfd6aef1a17692d273f955029ad4\transformed\appcompat-1.6.1\res
+com.crm.v2.app-ads-adservices-1.0.0-beta05-37 C:\Users\nadim\.gradle\caches\8.9\transforms\64339766629f56ab2bb49ec2f9540769\transformed\ads-adservices-1.0.0-beta05\res
+com.crm.v2.app-core-1.15.0-38 C:\Users\nadim\.gradle\caches\8.9\transforms\64d2006b34d00386a9cc7dd10894f4f0\transformed\core-1.15.0\res
+com.crm.v2.app-ui-util-release-39 C:\Users\nadim\.gradle\caches\8.9\transforms\65507cbf0f84266a163ff2eb04bfe7b2\transformed\ui-util-release\res
+com.crm.v2.app-ui-tooling-data-release-40 C:\Users\nadim\.gradle\caches\8.9\transforms\66367ec6ff22e99ce1c998ceee1a9f1f\transformed\ui-tooling-data-release\res
+com.crm.v2.app-firebase-messaging-23.4.1-41 C:\Users\nadim\.gradle\caches\8.9\transforms\663e46a5e85609356a59a10a3a515b95\transformed\firebase-messaging-23.4.1\res
+com.crm.v2.app-lifecycle-viewmodel-ktx-2.8.7-42 C:\Users\nadim\.gradle\caches\8.9\transforms\6991c210143027fd06748802aa8abe13\transformed\lifecycle-viewmodel-ktx-2.8.7\res
+com.crm.v2.app-play-services-basement-18.3.0-43 C:\Users\nadim\.gradle\caches\8.9\transforms\69e32565669f9415839fa4c7ce806219\transformed\play-services-basement-18.3.0\res
+com.crm.v2.app-animation-release-44 C:\Users\nadim\.gradle\caches\8.9\transforms\6b305cb347dea3eb760a4b3cfe462e8f\transformed\animation-release\res
+com.crm.v2.app-material-icons-core-release-45 C:\Users\nadim\.gradle\caches\8.9\transforms\6f07d39b45cdb39081b9d696fca57cc7\transformed\material-icons-core-release\res
+com.crm.v2.app-lifecycle-viewmodel-release-46 C:\Users\nadim\.gradle\caches\8.9\transforms\70751046877420b4bf9e43c7a70a4cc2\transformed\lifecycle-viewmodel-release\res
+com.crm.v2.app-hilt-work-1.2.0-47 C:\Users\nadim\.gradle\caches\8.9\transforms\7861c23f3ce2c709081418025e40dfc3\transformed\hilt-work-1.2.0\res
+com.crm.v2.app-datastore-release-48 C:\Users\nadim\.gradle\caches\8.9\transforms\78bdb977422db8cb303e3f3c4bd59531\transformed\datastore-release\res
+com.crm.v2.app-animation-core-release-49 C:\Users\nadim\.gradle\caches\8.9\transforms\7b0e4fbb4452ffe8c18791ed9cbddfe0\transformed\animation-core-release\res
+com.crm.v2.app-datastore-core-release-50 C:\Users\nadim\.gradle\caches\8.9\transforms\7ebf54fd81b21aa8e85fb10d918e6451\transformed\datastore-core-release\res
+com.crm.v2.app-room-ktx-2.6.1-51 C:\Users\nadim\.gradle\caches\8.9\transforms\827432803e67dc25f5b5819f50cf270b\transformed\room-ktx-2.6.1\res
+com.crm.v2.app-work-runtime-2.10.0-52 C:\Users\nadim\.gradle\caches\8.9\transforms\88719bd07e89d414e1aa99dc50de1aa4\transformed\work-runtime-2.10.0\res
+com.crm.v2.app-datastore-preferences-release-53 C:\Users\nadim\.gradle\caches\8.9\transforms\8ccae3476bed3fe522479f3c605f2c95\transformed\datastore-preferences-release\res
+com.crm.v2.app-ui-text-release-54 C:\Users\nadim\.gradle\caches\8.9\transforms\9130522a25e3815893eb1b761a16805e\transformed\ui-text-release\res
+com.crm.v2.app-lifecycle-livedata-ktx-2.8.7-55 C:\Users\nadim\.gradle\caches\8.9\transforms\91665b72dbfd141804b1c7879abf9637\transformed\lifecycle-livedata-ktx-2.8.7\res
+com.crm.v2.app-material3-release-56 C:\Users\nadim\.gradle\caches\8.9\transforms\9e7188c5234ea1dfa923a3868a6654e0\transformed\material3-release\res
+com.crm.v2.app-core-ktx-1.15.0-57 C:\Users\nadim\.gradle\caches\8.9\transforms\a1a493c94d5726727a63b9b50a730038\transformed\core-ktx-1.15.0\res
+com.crm.v2.app-firebase-common-20.4.3-58 C:\Users\nadim\.gradle\caches\8.9\transforms\a31144961cff9b41d429a6becf3dfc56\transformed\firebase-common-20.4.3\res
+com.crm.v2.app-core-runtime-2.2.0-59 C:\Users\nadim\.gradle\caches\8.9\transforms\ada06c30fc53f162ce65e5833fe829e6\transformed\core-runtime-2.2.0\res
+com.crm.v2.app-lifecycle-livedata-2.8.7-60 C:\Users\nadim\.gradle\caches\8.9\transforms\b4fcc08a70caf9c016d9d0e1fc9d9274\transformed\lifecycle-livedata-2.8.7\res
+com.crm.v2.app-security-crypto-1.1.0-alpha06-61 C:\Users\nadim\.gradle\caches\8.9\transforms\b6f91026c564d1c5c4f7784814625dcf\transformed\security-crypto-1.1.0-alpha06\res
+com.crm.v2.app-activity-1.9.3-62 C:\Users\nadim\.gradle\caches\8.9\transforms\b7b67bc16e879e28852f40d4f2a61383\transformed\activity-1.9.3\res
+com.crm.v2.app-ui-release-63 C:\Users\nadim\.gradle\caches\8.9\transforms\bfda2e975a7a41cf5586bad0b683c4d1\transformed\ui-release\res
+com.crm.v2.app-hilt-navigation-1.2.0-64 C:\Users\nadim\.gradle\caches\8.9\transforms\c71bd0d04c92080fa8884a33f5b59e05\transformed\hilt-navigation-1.2.0\res
+com.crm.v2.app-emoji2-views-helper-1.3.0-65 C:\Users\nadim\.gradle\caches\8.9\transforms\c7a66cad91acf98a5715445ff068d9d1\transformed\emoji2-views-helper-1.3.0\res
+com.crm.v2.app-customview-poolingcontainer-1.0.0-66 C:\Users\nadim\.gradle\caches\8.9\transforms\ca66b04854bce1f02c97be14d5b325b5\transformed\customview-poolingcontainer-1.0.0\res
+com.crm.v2.app-paging-common-release-67 C:\Users\nadim\.gradle\caches\8.9\transforms\d2ccadc5f82ae0caa0174a9d995b2136\transformed\paging-common-release\res
+com.crm.v2.app-runtime-saveable-release-68 C:\Users\nadim\.gradle\caches\8.9\transforms\d31a405c0018d7598da72aa948a2ace3\transformed\runtime-saveable-release\res
+com.crm.v2.app-hilt-navigation-compose-1.2.0-69 C:\Users\nadim\.gradle\caches\8.9\transforms\d49aa00b5c4a4f54c8caa482f3243b01\transformed\hilt-navigation-compose-1.2.0\res
+com.crm.v2.app-profileinstaller-1.3.1-70 C:\Users\nadim\.gradle\caches\8.9\transforms\d6a47d266278c5b67f5895acdc212caf\transformed\profileinstaller-1.3.1\res
+com.crm.v2.app-foundation-release-71 C:\Users\nadim\.gradle\caches\8.9\transforms\d8f30173af80c9fef766f7a013eba278\transformed\foundation-release\res
+com.crm.v2.app-sqlite-2.4.0-72 C:\Users\nadim\.gradle\caches\8.9\transforms\dcecefb9e6a62c8a3773c6ae2100c7bc\transformed\sqlite-2.4.0\res
+com.crm.v2.app-room-paging-2.6.1-73 C:\Users\nadim\.gradle\caches\8.9\transforms\e101e932111db6086ef399285d0e4743\transformed\room-paging-2.6.1\res
+com.crm.v2.app-navigation-runtime-ktx-2.8.5-74 C:\Users\nadim\.gradle\caches\8.9\transforms\e1daa26c0cb15d5169345ad0e11b2906\transformed\navigation-runtime-ktx-2.8.5\res
+com.crm.v2.app-ui-geometry-release-75 C:\Users\nadim\.gradle\caches\8.9\transforms\e28e878dab35ee5a18053fb3236650ab\transformed\ui-geometry-release\res
+com.crm.v2.app-lifecycle-runtime-compose-release-76 C:\Users\nadim\.gradle\caches\8.9\transforms\e731e977a7a52119099593ca1ba61816\transformed\lifecycle-runtime-compose-release\res
+com.crm.v2.app-tracing-1.2.0-77 C:\Users\nadim\.gradle\caches\8.9\transforms\eb21f2095d66e4b4a4ad0015c7d1256f\transformed\tracing-1.2.0\res
+com.crm.v2.app-ui-unit-release-78 C:\Users\nadim\.gradle\caches\8.9\transforms\ec0f4fa843bbe82e2284b29b82a70f51\transformed\ui-unit-release\res
+com.crm.v2.app-navigation-compose-2.8.5-79 C:\Users\nadim\.gradle\caches\8.9\transforms\ed34201b6bf361c9a5233e186646e17c\transformed\navigation-compose-2.8.5\res
+com.crm.v2.app-emoji2-1.3.0-80 C:\Users\nadim\.gradle\caches\8.9\transforms\ee72656b091031439d9f8a9239e1faa3\transformed\emoji2-1.3.0\res
+com.crm.v2.app-graphics-path-1.0.1-81 C:\Users\nadim\.gradle\caches\8.9\transforms\efa14577f9a301e44bd499afe3056713\transformed\graphics-path-1.0.1\res
+com.crm.v2.app-fragment-1.5.1-82 C:\Users\nadim\.gradle\caches\8.9\transforms\f0530744588a1fee2568ec2c74c75ed7\transformed\fragment-1.5.1\res
+com.crm.v2.app-material-ripple-release-83 C:\Users\nadim\.gradle\caches\8.9\transforms\f4fc9cff0c00fdb498ebe36eb86b4c4b\transformed\material-ripple-release\res
+com.crm.v2.app-tracing-ktx-1.2.0-84 C:\Users\nadim\.gradle\caches\8.9\transforms\f6a8c151fb4ee1284f535ff660b5b506\transformed\tracing-ktx-1.2.0\res
+com.crm.v2.app-lifecycle-livedata-core-ktx-2.8.7-85 C:\Users\nadim\.gradle\caches\8.9\transforms\fc23b095460702fbe28f60743e1f0629\transformed\lifecycle-livedata-core-ktx-2.8.7\res
+com.crm.v2.app-coil-base-2.7.0-86 C:\Users\nadim\.gradle\caches\8.9\transforms\fc3946839b4528e137b7f68e7ded4115\transformed\coil-base-2.7.0\res
+com.crm.v2.app-res-87 D:\Git_Repos\Dialer - Copy\Frontend\app\build\generated\res\injectCrashlyticsMappingFileIdDebug
+com.crm.v2.app-res-88 D:\Git_Repos\Dialer - Copy\Frontend\app\build\generated\res\processDebugGoogleServices
+com.crm.v2.app-resValues-89 D:\Git_Repos\Dialer - Copy\Frontend\app\build\generated\res\resValues\debug
+com.crm.v2.app-packageDebugResources-90 D:\Git_Repos\Dialer - Copy\Frontend\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.crm.v2.app-packageDebugResources-91 D:\Git_Repos\Dialer - Copy\Frontend\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.crm.v2.app-debug-92 D:\Git_Repos\Dialer - Copy\Frontend\app\build\intermediates\merged_res\debug\mergeDebugResources
+com.crm.v2.app-debug-93 D:\Git_Repos\Dialer - Copy\Frontend\app\src\debug\res
+com.crm.v2.app-main-94 D:\Git_Repos\Dialer - Copy\Frontend\app\src\main\res

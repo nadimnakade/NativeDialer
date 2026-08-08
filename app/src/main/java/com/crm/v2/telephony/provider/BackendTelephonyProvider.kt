@@ -1,8 +1,12 @@
 package com.crm.v2.telephony.provider
 
 import android.content.Context
+import android.media.AudioManager
+import android.media.Ringtone
+import android.media.RingtoneManager
 import android.util.Log
 import com.crm.v2.common.constants.ApiConstants
+import com.crm.v2.common.log.ApiLogger
 import com.crm.v2.data.datastore.AuthDataStore
 import com.crm.v2.data.network.dto.call.PlaceCallRequest
 import com.crm.v2.data.network.dto.call.PlaceCallResponse
@@ -71,6 +75,10 @@ class BackendTelephonyProvider @Inject constructor(
     private var currentCallId: String = ""
     private var sseEventSource: EventSource? = null
 
+    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private var outgoingRingtone: Ringtone? = null
+    private var previousAudioMode = AudioManager.MODE_NORMAL
+
     override suspend fun register(config: TelephonyConfig) {
         _callState.value = CallState.Registered
         _registrationState.value = true
@@ -78,6 +86,7 @@ class BackendTelephonyProvider @Inject constructor(
     }
 
     override suspend fun unregister() {
+        stopOutgoingRingtone()
         rtpAudioManager.stop()
         currentCallId = ""
         _callState.value = CallState.Idle
@@ -106,7 +115,7 @@ class BackendTelephonyProvider @Inject constructor(
 
             val jsonBody = json.encodeToString(PlaceCallRequest.serializer(), requestBody)
             val url = ApiConstants.DIALER_WS_URL + ApiConstants.Call.PLACE
-            Log.d(TAG, "Placing call to $number via backend: $url")
+            ApiLogger.request(TAG, "POST", url, jsonBody)
 
             val request = Request.Builder()
                 .url(url)
@@ -116,43 +125,43 @@ class BackendTelephonyProvider @Inject constructor(
             withContext(Dispatchers.IO) {
                 client.newCall(request).execute().use { response ->
                     val bodyString = response.body?.string() ?: ""
-                    Log.d(TAG, "Place call response: ${response.code} - $bodyString")
+                    ApiLogger.response(TAG, response.code, url, bodyString)
 
                     if (response.isSuccessful) {
                         val result = json.decodeFromString(PlaceCallResponse.serializer(), bodyString)
                         if (result.success) {
                             currentCallId = result.callId
-                            Log.d(TAG, "Call placed. callId=${result.callId}")
+                            ApiLogger.event(TAG, "Call placed: callId=${result.callId} to=$number")
                         } else {
                             _callState.value = CallState.Error
                             _events.tryEmit(TelephonyEvent.Error(result.message))
-                            Log.e(TAG, "Call failed: ${result.message}")
+                            ApiLogger.error(TAG, "Place call failed: ${result.message}")
                         }
                     } else {
                         _callState.value = CallState.Error
                         _events.tryEmit(TelephonyEvent.Error("API error: ${response.code}"))
-                        Log.e(TAG, "API error: ${response.code}")
+                        ApiLogger.error(TAG, "Place call HTTP error: ${response.code}")
                     }
                 }
             }
         } catch (e: Exception) {
             _callState.value = CallState.Error
             _events.tryEmit(TelephonyEvent.Error("Call failed: ${e::class.simpleName}: ${e.message}"))
-            Log.e(TAG, "Call exception", e)
+            ApiLogger.error(TAG, "Place call exception: ${e.message}", e)
         }
     }
 
     private fun listenForSseEvents(userKey: String) {
         sseEventSource?.cancel()
         val sseUrl = "${ApiConstants.DIALER_WS_URL}Call/events?userKey=$userKey"
-        Log.d(TAG, "Listening for SSE events: $sseUrl")
+        ApiLogger.event(TAG, "SSE connecting: $sseUrl")
 
         val request = Request.Builder().url(sseUrl).build()
         val factory = EventSources.createFactory(sseClient)
 
         sseEventSource = factory.newEventSource(request, object : EventSourceListener() {
             override fun onEvent(eventSource: EventSource, id: String?, type: String?, data: String) {
-                Log.d(TAG, "SSE event: type=$type data=$data")
+                ApiLogger.event(TAG, "SSE event: type=$type data=$data")
                 try {
                     val jsonObj = json.parseToJsonElement(data).jsonObject
                     val state = jsonObj["state"]?.jsonPrimitive?.content ?: ""
@@ -164,44 +173,48 @@ class BackendTelephonyProvider @Inject constructor(
                             val remoteIp = jsonObj["remote_media_ip"]?.jsonPrimitive?.content ?: ""
                             val remotePort = jsonObj["remote_media_port"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
                             val codec = jsonObj["codec"]?.jsonPrimitive?.content ?: "PCMU"
-                            Log.d(TAG, "Media info received: $remoteIp:$remotePort codec=$codec")
+                            ApiLogger.event(TAG, "SSE media_info: remote=$remoteIp:$remotePort codec=$codec")
                             startAudioStream(remoteIp, remotePort, codec)
                         }
                         state == "ringing" -> {
                             _callState.value = CallState.Ringing
-                            Log.d(TAG, "Call ringing")
+                            playOutgoingRingtone()
+                            ApiLogger.event(TAG, "SSE call ringing")
                         }
                         state == "connected" -> {
+                            stopOutgoingRingtone()
                             _callState.value = CallState.Connected
                             _events.tryEmit(TelephonyEvent.CallConnected(currentCallId))
-                            Log.d(TAG, "Call connected")
+                            ApiLogger.event(TAG, "SSE call connected")
                         }
                         state == "failed" -> {
+                            stopOutgoingRingtone()
                             rtpAudioManager.stop()
                             _callState.value = CallState.Error
                             _events.tryEmit(TelephonyEvent.Error(message.ifEmpty { "Call failed" }))
-                            Log.e(TAG, "Call failed: $message")
+                            ApiLogger.error(TAG, "SSE call failed: $message")
                         }
                         state == "ended" -> {
+                            stopOutgoingRingtone()
                             rtpAudioManager.stop()
                             _callState.value = CallState.Idle
                             _events.tryEmit(TelephonyEvent.CallDisconnected(currentCallId, 0))
+                            ApiLogger.event(TAG, "SSE call ended")
                             currentCallId = ""
-                            Log.d(TAG, "Call ended")
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Failed to parse SSE event", e)
+                    ApiLogger.error(TAG, "SSE parse error: ${e.message}", e)
                 }
             }
 
             override fun onFailure(eventSource: EventSource, t: Throwable?, response: okhttp3.Response?) {
-                Log.w(TAG, "SSE connection failed: ${t?.message ?: response?.code}")
+                ApiLogger.error(TAG, "SSE connection failed: ${t?.message ?: response?.code?.toString()}")
                 sseEventSource = null
             }
 
             override fun onClosed(eventSource: EventSource) {
-                Log.d(TAG, "SSE connection closed")
+                ApiLogger.event(TAG, "SSE connection closed")
                 sseEventSource = null
             }
         })
@@ -218,6 +231,7 @@ class BackendTelephonyProvider @Inject constructor(
     }
 
     override suspend fun hangup() {
+        stopOutgoingRingtone()
         rtpAudioManager.stop()
         val wasActive = _callState.value.isActive
         val callId = currentCallId
@@ -237,10 +251,14 @@ class BackendTelephonyProvider @Inject constructor(
                     .build()
 
                 withContext(Dispatchers.IO) {
-                    client.newCall(request).execute().close()
+                    client.newCall(request).execute().use { response ->
+                        val bodyString = response.body?.string() ?: ""
+                        ApiLogger.response(TAG, response.code, url, bodyString)
+                    }
                 }
+                ApiLogger.event(TAG, "Hangup sent: callId=$callId")
             } catch (e: Exception) {
-                Log.w(TAG, "Hangup API call failed", e)
+                ApiLogger.error(TAG, "Hangup API failed: ${e.message}", e)
             }
         }
         _events.tryEmit(TelephonyEvent.CallDisconnected(callId, 0))
@@ -281,5 +299,37 @@ class BackendTelephonyProvider @Inject constructor(
     }
 
     override fun getCurrentState(): CallState = _callState.value
+
+    private fun playOutgoingRingtone() {
+        try {
+            if (outgoingRingtone?.isPlaying == true) return
+            val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+            outgoingRingtone = RingtoneManager.getRingtone(context, uri)
+            outgoingRingtone?.let { ring ->
+                previousAudioMode = audioManager.mode
+                audioManager.mode = AudioManager.MODE_RINGTONE
+                ring.isLooping = true
+                ring.play()
+                ApiLogger.event(TAG, "Outgoing ringtone started")
+            }
+        } catch (e: Exception) {
+            ApiLogger.error(TAG, "Failed to play outgoing ringtone: ${e.message}", e)
+        }
+    }
+
+    private fun stopOutgoingRingtone() {
+        try {
+            outgoingRingtone?.let { ring ->
+                if (ring.isPlaying) {
+                    ring.stop()
+                    ApiLogger.event(TAG, "Outgoing ringtone stopped")
+                }
+            }
+            outgoingRingtone = null
+            audioManager.mode = previousAudioMode
+        } catch (e: Exception) {
+            ApiLogger.error(TAG, "Failed to stop outgoing ringtone: ${e.message}", e)
+        }
+    }
 }
 
