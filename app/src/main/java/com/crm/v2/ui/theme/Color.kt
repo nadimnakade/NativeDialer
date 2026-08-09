@@ -2,74 +2,74 @@ package com.crm.v2.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ── primary: indigo ────────────────────────────────────────────────────────
-val Primary = Color(0xFF4F46E5)
+// ── primary: deep slate (single accent) ─────────────────────────────────────
+val Primary = Color(0xFF1A1F2E)
 val OnPrimary = Color(0xFFFFFFFF)
-val PrimaryContainer = Color(0xFFE0E7FF)
-val OnPrimaryContainer = Color(0xFF312E81)
+val PrimaryContainer = Color(0xFFF0F2F5)
+val OnPrimaryContainer = Color(0xFF1A1F2E)
 
-// ── secondary: soft indigo ─────────────────────────────────────────────────
-val Secondary = Color(0xFF6366F1)
+// ── secondary: muted teal ───────────────────────────────────────────────────
+val Secondary = Color(0xFF0D9488)
 val OnSecondary = Color(0xFFFFFFFF)
-val SecondaryContainer = Color(0xFFE0E7FF)
-val OnSecondaryContainer = Color(0xFF312E81)
+val SecondaryContainer = Color(0xFFE6F7F5)
+val OnSecondaryContainer = Color(0xFF0D6960)
 
-// ── tertiary: violet ───────────────────────────────────────────────────────
-val Tertiary = Color(0xFF8B5CF6)
+// ── tertiary: warm amber ────────────────────────────────────────────────────
+val Tertiary = Color(0xFFF59E0B)
 val OnTertiary = Color(0xFFFFFFFF)
-val TertiaryContainer = Color(0xFFEDE9FE)
-val OnTertiaryContainer = Color(0xFF4C1D95)
+val TertiaryContainer = Color(0xFFFEF3C7)
+val OnTertiaryContainer = Color(0xFF92400E)
 
-// ── error ──────────────────────────────────────────────────────────────────
-val Error = Color(0xFFEF4444)
+// ── error ───────────────────────────────────────────────────────────────────
+val Error = Color(0xFFDC2626)
 val OnError = Color(0xFFFFFFFF)
-val ErrorContainer = Color(0xFFFEE2E2)
+val ErrorContainer = Color(0xFFFEF2F2)
 val OnErrorContainer = Color(0xFF991B1B)
 
-// ── background / surface ───────────────────────────────────────────────────
-val Background = Color(0xFFF0F2F5)
+// ── background / surface ────────────────────────────────────────────────────
+val Background = Color(0xFFF8F9FC)
 val OnBackground = Color(0xFF111827)
 val Surface = Color(0xFFFFFFFF)
 val OnSurface = Color(0xFF111827)
 val SurfaceVariant = Color(0xFFF3F4F6)
-val OnSurfaceVariant = Color(0xFF374151)
+val OnSurfaceVariant = Color(0xFF6B7280)
 
-val Outline = Color(0xFFD1D5DB)
-val OutlineVariant = Color(0xFFE5E7EB)
+val Outline = Color(0xFFE5E7EB)
+val OutlineVariant = Color(0xFFF3F4F6)
 val InverseSurface = Color(0xFF1F2937)
 val InverseOnSurface = Color(0xFFF9FAFB)
-val InversePrimary = Color(0xFFA5B4FC)
+val InversePrimary = Color(0xFFD1D5DB)
 
-// ── dark theme ─────────────────────────────────────────────────────────────
-val DarkPrimary = Color(0xFFA5B4FC)
-val DarkOnPrimary = Color(0xFF1E1B4B)
-val DarkPrimaryContainer = Color(0xFF312E81)
-val DarkOnPrimaryContainer = Color(0xFFE0E7FF)
-val DarkSecondary = Color(0xFFA5B4FC)
-val DarkOnSecondary = Color(0xFF1E1B4B)
-val DarkSecondaryContainer = Color(0xFF312E81)
-val DarkOnSecondaryContainer = Color(0xFFE0E7FF)
-val DarkTertiary = Color(0xFFC4B5FD)
-val DarkOnTertiary = Color(0xFF2E1065)
-val DarkTertiaryContainer = Color(0xFF4C1D95)
-val DarkOnTertiaryContainer = Color(0xFFEDE9FE)
+// ── dark theme ──────────────────────────────────────────────────────────────
+val DarkPrimary = Color(0xFFE5E7EB)
+val DarkOnPrimary = Color(0xFF111827)
+val DarkPrimaryContainer = Color(0xFF374151)
+val DarkOnPrimaryContainer = Color(0xFFF9FAFB)
+val DarkSecondary = Color(0xFF5EEAD4)
+val DarkOnSecondary = Color(0xFF134E4A)
+val DarkSecondaryContainer = Color(0xFF134E4A)
+val DarkOnSecondaryContainer = Color(0xFFCCFBF1)
+val DarkTertiary = Color(0xFFFCD34D)
+val DarkOnTertiary = Color(0xFF78350F)
+val DarkTertiaryContainer = Color(0xFF78350F)
+val DarkOnTertiaryContainer = Color(0xFFFEF3C7)
 val DarkError = Color(0xFFFCA5A5)
 val DarkOnError = Color(0xFF7F1D1D)
 val DarkErrorContainer = Color(0xFF991B1B)
-val DarkOnErrorContainer = Color(0xFFFEE2E2)
-val DarkBackground = Color(0xFF0F172A)
-val DarkOnBackground = Color(0xFFE2E8F0)
-val DarkSurface = Color(0xFF1E293B)
-val DarkOnSurface = Color(0xFFE2E8F0)
-val DarkSurfaceVariant = Color(0xFF334155)
-val DarkOnSurfaceVariant = Color(0xFF94A3B8)
-val DarkOutline = Color(0xFF334155)
-val DarkOutlineVariant = Color(0xFF1E293B)
-val DarkInverseSurface = Color(0xFFE2E8F0)
-val DarkInverseOnSurface = Color(0xFF0F172A)
-val DarkInversePrimary = Color(0xFF4F46E5)
+val DarkOnErrorContainer = Color(0xFFFEF2F2)
+val DarkBackground = Color(0xFF0F1117)
+val DarkOnBackground = Color(0xFFE5E7EB)
+val DarkSurface = Color(0xFF1A1F2E)
+val DarkOnSurface = Color(0xFFE5E7EB)
+val DarkSurfaceVariant = Color(0xFF252B3B)
+val DarkOnSurfaceVariant = Color(0xFF9CA3AF)
+val DarkOutline = Color(0xFF374151)
+val DarkOutlineVariant = Color(0xFF1F2537)
+val DarkInverseSurface = Color(0xFFE5E7EB)
+val DarkInverseOnSurface = Color(0xFF111827)
+val DarkInversePrimary = Color(0xFF1A1F2E)
 
-// ── status / semantic ─────────────────────────────────────────────────────
+// ── status / semantic ───────────────────────────────────────────────────────
 val StatusPending = Color(0xFFF59E0B)
 val StatusConnected = Color(0xFF10B981)
 val StatusNotConnected = Color(0xFFEF4444)
@@ -79,8 +79,8 @@ val StatusNotInterested = Color(0xFF6B7280)
 val StatusDisbursed = Color(0xFF14B8A6)
 
 // ── specialty surfaces ──────────────────────────────────────────────────────
-val CardGradientStart = Color(0xFF4F46E5)
-val CardGradientEnd = Color(0xFF7C3AED)
+val CardGradientStart = Color(0xFF1A1F2E)
+val CardGradientEnd = Color(0xFF374151)
 val SuccessSurface = Color(0xFFECFDF5)
 val ErrorSurface = Color(0xFFFEF2F2)
 val WarningSurface = Color(0xFFFFFBEB)

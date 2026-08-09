@@ -25,6 +25,9 @@ data class DialerUiState(
     val phoneNumber: String = "",
     val dialerQueue: List<DialerRecord> = emptyList(),
     val leadList: List<DialerRecord> = emptyList(),
+    val followUpRecords: List<DialerRecord> = emptyList(),
+    val ringingRecords: List<DialerRecord> = emptyList(),
+    val oneMinRecords: List<DialerRecord> = emptyList(),
     val currentLead: DialerRecord? = null,
     val callState: CallState = CallState.Idle,
     val isAutoDialing: Boolean = false,
@@ -82,6 +85,7 @@ class DialerViewModel @Inject constructor(
                             isSpeakerOn = false,
                             isOnHold = false,
                             isLoading = false,
+                            phoneNumber = "",
                         )
                     }
                     if (lead.key.isNotEmpty()) {
@@ -101,7 +105,7 @@ class DialerViewModel @Inject constructor(
                     }
                     is TelephonyEvent.CallConnected -> {
                         callStartTime = System.currentTimeMillis()
-                        _uiState.update { it.copy(lastCallMessage = "Call connected", isLoading = false) }
+                        _uiState.update { it.copy(lastCallMessage = "Call connected", isLoading = false, phoneNumber = "") }
                     }
                     is TelephonyEvent.CallDisconnected -> {
                         _uiState.update { it.copy(lastCallMessage = "Call ended", isLoading = false) }
@@ -118,11 +122,14 @@ class DialerViewModel @Inject constructor(
     }
 
     fun setActiveTab(tab: Int) {
-        _uiState.update { it.copy(activeTab = tab) }
+        _uiState.update { it.copy(activeTab = tab, phoneNumber = if (tab != 6) "" else it.phoneNumber) }
         when (tab) {
             0 -> loadDialerQueue()
             1 -> loadLeads(refresh = false)
-            2 -> loadContacts()
+            2 -> loadFollowUp()
+            3 -> loadRinging()
+            4 -> loadOneMin()
+            5 -> loadContacts()
         }
     }
 
@@ -159,6 +166,54 @@ class DialerViewModel @Inject constructor(
             contactRepository.getCachedContacts().collect { contacts ->
                 val grouped = contacts.groupBy { it.name?.firstOrNull()?.uppercaseChar() ?: '#' }
                 _uiState.update { it.copy(allContacts = contacts, groupedContacts = grouped) }
+            }
+        }
+    }
+
+    private fun loadFollowUp() {
+        val userKey = authDataStore.userKey ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            when (val result = leadRepository.getFollowUpLeads(userKey, "F")) {
+                is com.crm.v2.common.result.Resource.Success -> _uiState.update {
+                    it.copy(followUpRecords = result.data, isLoading = false)
+                }
+                is com.crm.v2.common.result.Resource.Error -> _uiState.update {
+                    it.copy(error = result.message, isLoading = false)
+                }
+                else -> {}
+            }
+        }
+    }
+
+    private fun loadRinging() {
+        val userKey = authDataStore.userKey ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            when (val result = leadRepository.getFollowUpLeads(userKey, "R")) {
+                is com.crm.v2.common.result.Resource.Success -> _uiState.update {
+                    it.copy(ringingRecords = result.data, isLoading = false)
+                }
+                is com.crm.v2.common.result.Resource.Error -> _uiState.update {
+                    it.copy(error = result.message, isLoading = false)
+                }
+                else -> {}
+            }
+        }
+    }
+
+    private fun loadOneMin() {
+        val userKey = authDataStore.userKey ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            when (val result = leadRepository.getFollowUpLeads(userKey, "1Min")) {
+                is com.crm.v2.common.result.Resource.Success -> _uiState.update {
+                    it.copy(oneMinRecords = result.data, isLoading = false)
+                }
+                is com.crm.v2.common.result.Resource.Error -> _uiState.update {
+                    it.copy(error = result.message, isLoading = false)
+                }
+                else -> {}
             }
         }
     }
@@ -317,6 +372,10 @@ class DialerViewModel @Inject constructor(
         _uiState.update { it.copy(error = null) }
     }
 
+    fun clearLastCallMessage() {
+        _uiState.update { it.copy(lastCallMessage = null) }
+    }
+
     fun toggleMute() {
         viewModelScope.launch {
             val newMuted = !_uiState.value.isMuted
@@ -376,20 +435,26 @@ class DialerViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
             try {
-                // TODO(manual): for manual leads (key == ""), server should be
-                // Dialer/lead-info-new (create), not updateDialer. Revisit when wiring
-                // the API contract.
-                dialerRepository.updateDialer(
+                val result = dialerRepository.updateDialer(
                     key = key,
                     status = status,
                     callbackDate = callbackDate,
                     remarks = remarks,
                     userKey = userKey,
                 )
+                when (result) {
+                    is com.crm.v2.common.result.Resource.Success -> {
+                        _uiState.update { it.copy(lastCallMessage = "Status saved: $status", isSaving = false) }
+                    }
+                    is com.crm.v2.common.result.Resource.Error -> {
+                        _uiState.update { it.copy(error = "Save failed: ${result.message}", isSaving = false) }
+                    }
+                    else -> {}
+                }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = "Failed to save: ${e.message}", isSaving = false) }
             }
-            _uiState.update { it.copy(showUpdateStatus = false, currentLead = null, callDuration = 0, isSaving = false) }
+            _uiState.update { it.copy(showUpdateStatus = false, currentLead = null, callDuration = 0) }
             if (shouldContinue) {
                 val userK = authDataStore.userKey ?: return@launch
                 dialerRepository.getDialerData(userK).let { result ->

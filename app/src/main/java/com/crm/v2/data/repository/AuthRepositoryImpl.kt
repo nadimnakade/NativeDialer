@@ -29,7 +29,7 @@ class AuthRepositoryImpl @Inject constructor(
                     val user = User(
                         key = key,
                         employeeName = it.employeeName,
-                        userName = userName,
+                        userName = it.userName,
                         designation = it.designation ?: "",
                         role = it.role ?: "",
                         token = it.token,
@@ -38,6 +38,10 @@ class AuthRepositoryImpl @Inject constructor(
                     authDataStore.accessToken = it.token
                     authDataStore.userKey = key
                     authDataStore.employeeName = it.employeeName
+                    authDataStore.userName = it.userName
+                    authDataStore.designationDesc = it.designation
+                    authDataStore.roleDesc = it.role
+                    authDataStore.photoUrl = it.photoUrl
                     authDataStore.isLoggedIn = true
                     authDataStore.tokenExpiry = parseExpiry(it.expiration)
                     Resource.Success(user)
@@ -63,7 +67,7 @@ class AuthRepositoryImpl @Inject constructor(
                     val user = User(
                         key = key,
                         employeeName = it.employeeName,
-                        userName = mobileNo,
+                        userName = it.userName,
                         designation = it.designation ?: "",
                         role = it.role ?: "",
                         token = it.token,
@@ -72,6 +76,10 @@ class AuthRepositoryImpl @Inject constructor(
                     authDataStore.accessToken = it.token
                     authDataStore.userKey = key
                     authDataStore.employeeName = it.employeeName
+                    authDataStore.userName = it.userName
+                    authDataStore.designationDesc = it.designation
+                    authDataStore.roleDesc = it.role
+                    authDataStore.photoUrl = it.photoUrl
                     authDataStore.isLoggedIn = true
                     authDataStore.tokenExpiry = parseExpiry(it.expiration)
                     Resource.Success(user)
@@ -105,9 +113,9 @@ class AuthRepositoryImpl @Inject constructor(
         return User(
             key = userKey,
             employeeName = authDataStore.employeeName ?: "",
-            userName = "",
-            designation = "",
-            role = "",
+            userName = authDataStore.userName ?: "",
+            designation = authDataStore.designationDesc ?: "",
+            role = authDataStore.roleDesc ?: "",
             token = token,
             tokenExpiry = authDataStore.tokenExpiry
         )

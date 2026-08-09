@@ -1,0 +1,4 @@
+# ninja log v5
+21	464	8079106396305908	CMakeFiles/pjsip_bridge.dir/pjsip_wss_transport.c.o	3bcac01963b35776
+4	2391	8079106415639122	CMakeFiles/pjsip_bridge.dir/pjsip_jni.c.o	9d10deb87c6da248
+2394	3355	8079106424859099	D:/Git_Repos/Dialer - Copy/Frontend/app/build/intermediates/cxx/Debug/1i5q5do5/obj/armeabi-v7a/libpjsip_bridge.so	2d556389136a6afc

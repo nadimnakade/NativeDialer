@@ -17,6 +17,7 @@ data class DashboardUiState(
     val liveCount: LiveCount = LiveCount(),
     val isLoading: Boolean = false,
     val error: String? = null,
+    val employeeName: String = "",
 )
 
 @HiltViewModel
@@ -29,6 +30,7 @@ class DashboardViewModel @Inject constructor(
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
     init {
+        _uiState.update { it.copy(employeeName = authDataStore.employeeName ?: "") }
         loadDashboard()
     }
 

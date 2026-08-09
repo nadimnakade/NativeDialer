@@ -18,6 +18,16 @@ data class SettingsUiState(
     val callRecordingEnabled: Boolean = true,
     val employeeName: String = "",
     val appVersion: String = "2.0.0",
+    val userName: String = "",
+    val designation: String = "",
+    val role: String = "",
+    val reportingManager: String = "",
+    val officeContact: String = "",
+    val dateOfBirth: String = "",
+    val dateOfJoining: String = "",
+    val bankAccount: String = "",
+    val address: String = "",
+    val photoUrl: String = "",
 )
 
 @HiltViewModel
@@ -46,7 +56,21 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { it.copy(callRecordingEnabled = enabled) }
             }
         }
-        _uiState.update { it.copy(employeeName = authDataStore.employeeName ?: "") }
+        _uiState.update {
+            it.copy(
+                employeeName = authDataStore.employeeName ?: "",
+                userName = authDataStore.userName ?: "",
+                designation = authDataStore.designationDesc ?: "",
+                role = authDataStore.roleDesc ?: "",
+                reportingManager = authDataStore.reportingManagerName ?: "",
+                officeContact = authDataStore.officeContactNo ?: "",
+                dateOfBirth = authDataStore.dateOfBirth ?: "",
+                dateOfJoining = authDataStore.dateOfJoining ?: "",
+                bankAccount = authDataStore.bankAccountNo ?: "",
+                address = authDataStore.address ?: "",
+                photoUrl = authDataStore.photoUrl ?: "",
+            )
+        }
     }
 
     fun setDarkMode(mode: DarkModePreference) {

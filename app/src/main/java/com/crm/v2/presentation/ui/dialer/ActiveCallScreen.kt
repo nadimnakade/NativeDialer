@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.crm.v2.common.util.maskPhone
 import com.crm.v2.telephony.CallState
 import kotlinx.coroutines.delay
 
@@ -146,7 +147,7 @@ fun ActiveCallScreen(
                 }
 
                 Text(
-                    text = number,
+                    text = number.maskPhone(),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,

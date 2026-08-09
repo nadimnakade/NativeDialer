@@ -3,6 +3,7 @@ package com.crm.v2.presentation.ui.dashboard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -11,10 +12,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.crm.v2.domain.model.DashboardData
 import com.crm.v2.domain.model.LiveCount
@@ -50,21 +53,135 @@ fun DashboardScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(48.dp),
-                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(32.dp),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    strokeWidth = 2.dp,
                 )
             }
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(Dimens.space16),
-                verticalArrangement = Arrangement.spacedBy(Dimens.space20),
+                contentPadding = PaddingValues(top = 24.dp, bottom = 100.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
-                item { WelcomeSection() }
-                item { QuickActionsRow(onNavigateToDialer, onNavigateToLeads, onNavigateToFollowUps) }
-                item { StatsGridSection(data = uiState.dashboardData) }
-                item { LiveCountSection(liveCount = uiState.liveCount) }
-                item { DisbursalBreakdownSection(data = uiState.dashboardData) }
+                // Greeting
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                        Text(
+                            text = "Hello, ${uiState.employeeName.ifEmpty { "User" }}",
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            letterSpacing = (-1).sp,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Here's your overview",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                // Ranking card
+                item {
+                    if (uiState.dashboardData.rank > 0) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp),
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.onBackground,
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(20.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(52.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFFCD34D)),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Icon(
+                                        Icons.Filled.EmojiEvents,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onBackground,
+                                        modifier = Modifier.size(28.dp),
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        "You are ranked #${uiState.dashboardData.rank}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White,
+                                    )
+                                    Text(
+                                        "with ${String.format("%.1f", uiState.dashboardData.points)} points",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.White.copy(alpha = 0.7f),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Quick actions — 2-column bento
+                item {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            BentoActionCard(
+                                icon = Icons.Filled.Call,
+                                label = "Dialer",
+                                subtitle = "Start calling",
+                                onClick = onNavigateToDialer,
+                                modifier = Modifier.weight(1f),
+                                accentColor = MaterialTheme.colorScheme.secondary,
+                            )
+                            BentoActionCard(
+                                icon = Icons.Filled.PersonAdd,
+                                label = "Add Lead",
+                                subtitle = "New contact",
+                                onClick = onNavigateToLeads,
+                                modifier = Modifier.weight(1f),
+                                accentColor = MaterialTheme.colorScheme.tertiary,
+                            )
+                        }
+                        BentoActionCard(
+                            icon = Icons.Filled.Schedule,
+                            label = "Follow-ups",
+                            subtitle = "View pending callbacks",
+                            onClick = onNavigateToFollowUps,
+                            modifier = Modifier.fillMaxWidth(),
+                            accentColor = Color(0xFF3B82F6),
+                        )
+                    }
+                }
+
+                // Stats — bento grid
+                item {
+                    StatsBentoSection(data = uiState.dashboardData)
+                }
+
+                // Live count
+                item {
+                    LiveCountBentoSection(liveCount = uiState.liveCount)
+                }
             }
         }
 
@@ -78,7 +195,7 @@ fun DashboardScreen(
                     snackbarData = data,
                     containerColor = MaterialTheme.colorScheme.errorContainer,
                     contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                    shape = MaterialTheme.shapes.medium,
+                    shape = MaterialTheme.shapes.small,
                 )
             },
         )
@@ -86,171 +203,200 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun WelcomeSection() {
-    Column {
-        Text(
-            text = "Dashboard",
-            style = MaterialTheme.typography.headlineLarge,
-        )
-        Spacer(modifier = Modifier.height(Dimens.space6))
-        Text(
-            text = "Here's your performance overview",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun QuickActionsRow(
-    onDialer: () -> Unit,
-    onLeads: () -> Unit,
-    onFollowUps: () -> Unit,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(Dimens.space12),
-    ) {
-        QuickActionCard(
-            icon = Icons.Filled.Call,
-            label = "Dialer",
-            onClick = onDialer,
-            modifier = Modifier.weight(1f),
-        )
-        QuickActionCard(
-            icon = Icons.Filled.PersonAdd,
-            label = "Add Lead",
-            onClick = onLeads,
-            modifier = Modifier.weight(1f),
-        )
-        QuickActionCard(
-            icon = Icons.Filled.Schedule,
-            label = "Follow-ups",
-            onClick = onFollowUps,
-            modifier = Modifier.weight(1f),
-        )
-    }
-}
-
-@Composable
-private fun QuickActionCard(
+private fun BentoActionCard(
     icon: ImageVector,
     label: String,
+    subtitle: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    accentColor: Color = MaterialTheme.colorScheme.secondary,
 ) {
-    ElevatedCard(
+    Card(
         onClick = onClick,
         modifier = modifier,
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
         ),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = Dimens.elevationNone),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(Dimens.space16),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(Dimens.iconXl),
-            )
-            Spacer(modifier = Modifier.height(Dimens.space8))
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-        }
-    }
-}
-
-@Composable
-private fun StatsGridSection(data: DashboardData) {
-    Column {
-        CrmSectionHeader("Performance Stats")
-        Spacer(modifier = Modifier.height(Dimens.space12))
-
-        val stats = listOf(
-            StatItem(Icons.Filled.EmojiEvents, "Rank", data.rank.toString(), "Your current ranking"),
-            StatItem(Icons.Filled.Stars, "Points", data.points.toString(), "Performance points earned"),
-            StatItem(Icons.Filled.AccountBalanceWallet, "Disbursed", "₹${formatAmount(data.totalDisbursedAmt)}", "Total amount disbursed"),
-            StatItem(Icons.Filled.TrendingUp, "FTD", data.clientConnectedFtd.toString(), "First time disbursements"),
-            StatItem(Icons.Filled.Timer, "Duration", data.duration, "Total call duration"),
-            StatItem(Icons.Filled.Leaderboard, "Daily Leads", data.dailyLeads.toString(), "Leads generated today"),
-            StatItem(Icons.Filled.Payments, "Login Amt", "₹${formatAmount(data.loginAmount)}", "Monthly login amount"),
-            StatItem(Icons.Filled.Assignment, "Logins", data.loginCount.toString(), "Total logins this month"),
-            StatItem(Icons.Filled.SignalCellularAlt, "Connectivity", "${data.connectivityPercent.toInt()}%", "Network connectivity"),
-        )
-
-        stats.forEach { stat ->
-            StatCardRow(stat)
-            Spacer(modifier = Modifier.height(Dimens.space8))
-        }
-    }
-}
-
-private data class StatItem(
-    val icon: ImageVector,
-    val title: String,
-    val value: String,
-    val subtitle: String,
-)
-
-@Composable
-private fun StatCardRow(stat: StatItem) {
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
-        border = CardDefaults.outlinedCardBorder(),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Dimens.space16, vertical = Dimens.space14),
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(20.dp),
         ) {
             Box(
                 modifier = Modifier
                     .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(accentColor.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    imageVector = stat.icon,
-                    contentDescription = stat.title,
-                    tint = MaterialTheme.colorScheme.primary,
+                    imageVector = icon,
+                    contentDescription = label,
+                    tint = accentColor,
                     modifier = Modifier.size(22.dp),
                 )
             }
 
-            Spacer(modifier = Modifier.width(Dimens.space14))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stat.title,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = stat.value,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = stat.subtitle,
+                text = label,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatsBentoSection(data: DashboardData) {
+    Column(
+        modifier = Modifier.padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            "Performance",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+
+        // First row — 2 big stats
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            BigStatCard(
+                label = "Disbursed",
+                value = "\u20B9${formatAmount(data.totalDisbursedAmt)}",
+                modifier = Modifier.weight(1f),
+                accentColor = MaterialTheme.colorScheme.secondary,
+            )
+            BigStatCard(
+                label = "Rank",
+                value = data.rank.toString(),
+                modifier = Modifier.weight(1f),
+                accentColor = MaterialTheme.colorScheme.tertiary,
+            )
+        }
+
+        // Second row — 3 small stats
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SmallStatCard(
+                label = "Points",
+                value = data.points.toString(),
+                modifier = Modifier.weight(1f),
+            )
+            SmallStatCard(
+                label = "FTD",
+                value = data.clientConnectedFtd.toString(),
+                modifier = Modifier.weight(1f),
+            )
+            SmallStatCard(
+                label = "Leads",
+                value = data.dailyLeads.toString(),
+                modifier = Modifier.weight(1f),
+            )
+        }
+
+        // Third row — 2 medium stats
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            MediumStatCard(
+                label = "Duration",
+                value = data.duration,
+                modifier = Modifier.weight(1f),
+            )
+            MediumStatCard(
+                label = "Connectivity",
+                value = "${data.connectivityPercent.toInt()}%",
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun BigStatCard(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    accentColor: Color = MaterialTheme.colorScheme.onBackground,
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = accentColor,
+                letterSpacing = (-0.5).sp,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SmallStatCard(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                letterSpacing = (-0.3).sp,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = label,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -259,59 +405,104 @@ private fun StatCardRow(stat: StatItem) {
 }
 
 @Composable
-private fun LiveCountSection(liveCount: LiveCount) {
-    CrmCard {
-        Column(modifier = Modifier.padding(Dimens.space16)) {
-            CrmSectionHeader("Call Status Breakdown")
-            Spacer(modifier = Modifier.height(Dimens.space12))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                StatusPill("Connected", liveCount.interested.toString(), MaterialTheme.colorScheme.tertiary)
-                StatusPill("Follow Up", liveCount.followUp.toString(), MaterialTheme.colorScheme.primary)
-                StatusPill("Not Int.", liveCount.notInterested.toString(), MaterialTheme.colorScheme.error)
-            }
-            Spacer(modifier = Modifier.height(Dimens.space16))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                StatusPill("Ringing", liveCount.ringing.toString(), MaterialTheme.colorScheme.error)
-                StatusPill("DND", liveCount.dnd.toString(), MaterialTheme.colorScheme.error)
-                StatusPill("Total", liveCount.totalCount.toString(), MaterialTheme.colorScheme.secondary)
+private fun MediumStatCard(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
             }
         }
     }
 }
 
 @Composable
-private fun StatusPill(label: String, value: String, color: Color) {
+private fun LiveCountBentoSection(liveCount: LiveCount) {
+    Column(
+        modifier = Modifier.padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            "Call Status",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.onBackground,
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    LiveStatItem("Connected", liveCount.interested.toString(), Color(0xFF5EEAD4))
+                    LiveStatItem("Follow Up", liveCount.followUp.toString(), Color(0xFF93C5FD))
+                    LiveStatItem("Not Int.", liveCount.notInterested.toString(), Color(0xFFFCA5A5))
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    LiveStatItem("Ringing", liveCount.ringing.toString(), Color(0xFFFCD34D))
+                    LiveStatItem("DND", liveCount.dnd.toString(), Color(0xFFFCA5A5))
+                    LiveStatItem("Total", liveCount.totalCount.toString(), Color.White)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LiveStatItem(label: String, value: String, color: Color) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = value,
             style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
             color = color,
+            letterSpacing = (-0.3).sp,
         )
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = Color.White.copy(alpha = 0.6f),
         )
-    }
-}
-
-@Composable
-private fun DisbursalBreakdownSection(data: DashboardData) {
-    CrmCard {
-        Column(modifier = Modifier.padding(Dimens.space16)) {
-            CrmSectionHeader("Disbursal Breakdown")
-            Spacer(modifier = Modifier.height(Dimens.space10))
-            Text(
-                text = "Total Disbursed: ₹${formatAmount(data.totalDisbursedAmt)}",
-                style = MaterialTheme.typography.titleSmall,
-            )
-        }
     }
 }
 

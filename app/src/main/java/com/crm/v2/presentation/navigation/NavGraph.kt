@@ -56,11 +56,11 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
 
     val bottomNavRoutes = listOf(
         Screen.Dashboard.route, Screen.Leads.route, Screen.Dialer.route,
-        Screen.Contacts.route, Screen.Reports.route,
+        Screen.Reports.route,
     )
     val showBottomBar = currentRoute in bottomNavRoutes
     val hiddenRoutes = listOf(Screen.Login.route, Screen.Dashboard.route, Screen.Dialer.route,
-        Screen.Leads.route, Screen.Contacts.route, Screen.Reports.route)
+        Screen.Leads.route, Screen.Reports.route)
 
     Scaffold(
         topBar = {
@@ -233,7 +233,11 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
                     onLogout = { navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } } },
                 )
             }
-            composable(Screen.Profile.route) { ProfileScreen() }
+            composable(Screen.Profile.route) {
+                ProfileScreen(
+                    onLogout = { navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } } },
+                )
+            }
 
             // Documents
             composable(Screen.Documents.route) {

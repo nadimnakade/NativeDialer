@@ -43,16 +43,25 @@ class ReportsViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            reportingRepository.getPerformance(userKey).let { result ->
-                if (result is Resource.Success) _uiState.update { it.copy(performance = result.data) }
-            }
-            reportingRepository.getAttendance(userKey).let { result ->
-                if (result is Resource.Success) _uiState.update { it.copy(attendance = result.data) }
-            }
-            reportingRepository.getDialerLiveIndv(userKey).let { result ->
-                if (result is Resource.Success) _uiState.update { it.copy(dialerLive = result.data) }
+            try {
+                reportingRepository.getPerformance(userKey).let { result ->
+                    if (result is Resource.Success) _uiState.update { it.copy(performance = result.data) }
+                    if (result is Resource.Error) _uiState.update { it.copy(error = result.message) }
+                }
+                reportingRepository.getAttendance(userKey).let { result ->
+                    if (result is Resource.Success) _uiState.update { it.copy(attendance = result.data) }
+                }
+                reportingRepository.getDialerLiveIndv(userKey).let { result ->
+                    if (result is Resource.Success) _uiState.update { it.copy(dialerLive = result.data) }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message ?: "Failed to load reports") }
             }
             _uiState.update { it.copy(isLoading = false) }
         }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
     }
 }

@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.crm.v2.ui.theme.Dimens
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -266,4 +267,35 @@ fun CrmSectionHeader(
         color = MaterialTheme.colorScheme.onBackground,
         modifier = modifier,
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ErrorSnackbarHost(snackbarHostState: SnackbarHostState) {
+    SnackbarHost(hostState = snackbarHostState) { data ->
+        Snackbar(
+            snackbarData = data,
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+            shape = MaterialTheme.shapes.small,
+        )
+    }
+}
+
+@Composable
+fun ScreenWithErrorSnackbar(
+    error: String?,
+    onErrorShown: () -> Unit,
+    modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    content: @Composable (SnackbarHostState) -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(error) {
+        if (!error.isNullOrEmpty()) {
+            snackbarHostState.showSnackbar(error, duration = SnackbarDuration.Short)
+            onErrorShown()
+        }
+    }
+    content(snackbarHostState)
 }

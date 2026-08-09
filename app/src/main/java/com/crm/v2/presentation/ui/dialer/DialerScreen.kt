@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.crm.v2.common.util.maskPhone
 import com.crm.v2.domain.model.Contact
 import com.crm.v2.domain.model.DialerRecord
 import com.crm.v2.presentation.ui.common.LoadingOverlay
@@ -41,6 +43,13 @@ fun DialerScreen(
         uiState.error?.let {
             snackbarHostState.showSnackbar(it, duration = SnackbarDuration.Short)
             viewModel.clearError()
+        }
+    }
+
+    LaunchedEffect(uiState.lastCallMessage) {
+        uiState.lastCallMessage?.let {
+            snackbarHostState.showSnackbar(it, duration = SnackbarDuration.Short)
+            viewModel.clearLastCallMessage()
         }
     }
 
@@ -112,35 +121,61 @@ private fun DialerMainContent(
     uiState: DialerUiState,
     viewModel: DialerViewModel,
 ) {
-    val tabs = listOf("Auto", "Lead", "Contact", "Manual")
+    val tabs = listOf(
+        TabItem("Auto", Icons.Filled.PlayArrow),
+        TabItem("Lead", Icons.Filled.People),
+        TabItem("Follow Up", Icons.Filled.FollowTheSigns),
+        TabItem("Ringing", Icons.Filled.RingVolume),
+        TabItem("+1 Min", Icons.Filled.Timer),
+        TabItem("Contact", Icons.Filled.Contacts),
+        TabItem("Manual", Icons.Filled.Dialpad),
+    )
 
     LaunchedEffect(Unit) {
         viewModel.loadDialerQueue()
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         TopAppBar(
-            title = { Text("Dialer", fontWeight = FontWeight.Bold) },
+            title = {
+                Text(
+                    "Dialer",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                )
+            },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.surface,
             ),
         )
 
-        TabRow(
+        ScrollableTabRow(
             selectedTabIndex = uiState.activeTab,
             containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.primary,
             divider = {},
+            edgePadding = 16.dp,
         ) {
-            tabs.forEachIndexed { index, title ->
+            tabs.forEachIndexed { index, tab ->
                 Tab(
                     selected = uiState.activeTab == index,
                     onClick = { viewModel.setActiveTab(index) },
                     text = {
-                        Text(
-                            title,
-                            fontWeight = if (uiState.activeTab == index) FontWeight.Bold else FontWeight.Normal,
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            Icon(
+                                tab.icon,
+                                contentDescription = tab.title,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Text(
+                                tab.title,
+                                fontWeight = if (uiState.activeTab == index) FontWeight.SemiBold else FontWeight.Normal,
+                                style = MaterialTheme.typography.labelLarge,
+                            )
+                        }
                     },
                 )
             }
@@ -160,17 +195,192 @@ private fun DialerMainContent(
                 onRefresh = viewModel::refreshLeads,
                 onLoadMore = { viewModel.loadLeads() },
             )
-            2 -> ContactTab(
+            2 -> FollowUpDialerTab(
+                records = uiState.followUpRecords,
+                isLoading = uiState.isLoading,
+                onCall = { lead -> viewModel.callLead(lead) },
+            )
+            3 -> RingingDialerTab(
+                records = uiState.ringingRecords,
+                isLoading = uiState.isLoading,
+                onCall = { lead -> viewModel.callLead(lead) },
+            )
+            4 -> OneMinDialerTab(
+                records = uiState.oneMinRecords,
+                isLoading = uiState.isLoading,
+                onCall = { lead -> viewModel.callLead(lead) },
+            )
+            5 -> ContactTab(
                 uiState = uiState,
                 onSearchChanged = viewModel::onContactSearchChanged,
                 onCallContact = { contact -> viewModel.callContact(contact) },
             )
-            3 -> ManualDialTab(
+            6 -> ManualDialTab(
                 phoneNumber = uiState.phoneNumber,
                 onNumberChanged = viewModel::onPhoneNumberChanged,
                 onClear = viewModel::clearManualNumber,
                 onCall = { number -> viewModel.callManualNumber(number) },
             )
+        }
+    }
+}
+
+private data class TabItem(val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
+
+@Composable
+private fun FollowUpDialerTab(
+    records: List<com.crm.v2.domain.model.DialerRecord>,
+    isLoading: Boolean,
+    onCall: (com.crm.v2.domain.model.DialerRecord) -> Unit,
+) {
+    if (isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(modifier = Modifier.size(32.dp))
+        }
+    } else if (records.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize().padding(48.dp), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    Icons.Filled.FollowTheSigns,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text("No follow-up records", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
+            }
+        }
+    } else {
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            items(records, key = { it.key }) { record ->
+                DialerRecordCard(record = record, onCall = { onCall(record) }, showCallbackDate = true)
+            }
+        }
+    }
+}
+
+@Composable
+private fun RingingDialerTab(
+    records: List<com.crm.v2.domain.model.DialerRecord>,
+    isLoading: Boolean,
+    onCall: (com.crm.v2.domain.model.DialerRecord) -> Unit,
+) {
+    if (isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(modifier = Modifier.size(32.dp))
+        }
+    } else if (records.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize().padding(48.dp), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    Icons.Filled.RingVolume,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text("No ringing records", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
+            }
+        }
+    } else {
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            items(records, key = { it.key }) { record ->
+                DialerRecordCard(record = record, onCall = { onCall(record) }, showCallbackDate = false)
+            }
+        }
+    }
+}
+
+@Composable
+private fun OneMinDialerTab(
+    records: List<com.crm.v2.domain.model.DialerRecord>,
+    isLoading: Boolean,
+    onCall: (com.crm.v2.domain.model.DialerRecord) -> Unit,
+) {
+    if (isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(modifier = Modifier.size(32.dp))
+        }
+    } else if (records.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize().padding(48.dp), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    Icons.Filled.Timer,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text("No +1 min records", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
+            }
+        }
+    } else {
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            items(records, key = { it.key }) { record ->
+                DialerRecordCard(record = record, onCall = { onCall(record) }, showCallbackDate = true)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DialerRecordCard(
+    record: com.crm.v2.domain.model.DialerRecord,
+    onCall: () -> Unit,
+    showCallbackDate: Boolean,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier.size(44.dp).clip(CircleShape).background(MaterialTheme.colorScheme.tertiaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = record.clientName.take(1).uppercase(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.tertiary,
+                )
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(record.clientName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(record.contact.maskPhone(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (showCallbackDate) {
+                    record.callbackDate?.let { date ->
+                        if (date.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text("Callback: $date", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+                record.remarks?.let { remarks ->
+                    if (remarks.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(remarks, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                }
+            }
+            FilledTonalIconButton(onClick = onCall, modifier = Modifier.size(36.dp)) {
+                Icon(Icons.Filled.Phone, contentDescription = "Call", modifier = Modifier.size(18.dp))
+            }
         }
     }
 }
@@ -282,7 +492,7 @@ private fun AutoDialTab(
                                             fontWeight = FontWeight.Bold,
                                         )
                                         Text(
-                                            lead.contact,
+                                            lead.contact.maskPhone(),
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
@@ -438,7 +648,7 @@ private fun QueueLeadCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    lead.contact,
+                    lead.contact.maskPhone(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -562,7 +772,7 @@ private fun LeadTab(
                                 overflow = TextOverflow.Ellipsis,
                             )
                             Text(
-                                lead.contact,
+                                lead.contact.maskPhone(),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )

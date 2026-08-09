@@ -2,11 +2,14 @@ package com.crm.v2.presentation.ui.auth
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -31,6 +34,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
@@ -72,52 +76,58 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 28.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .verticalScroll(rememberScrollState()),
         ) {
-            Spacer(modifier = Modifier.height(80.dp))
+            Spacer(modifier = Modifier.height(64.dp))
 
+            // Logo and welcome — left-aligned, not centered
             AnimatedVisibility(
                 visible = showContent,
-                enter = fadeIn(animationSpec = tween(600)) + slideInVertically(
-                    animationSpec = tween(600),
-                    initialOffsetY = { -it / 3 }
+                enter = fadeIn(animationSpec = tween(800)) + slideInVertically(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow,
+                    ),
+                    initialOffsetY = { -it / 4 },
                 ),
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 32.dp),
+                    horizontalAlignment = Alignment.Start,
+                ) {
                     Box(
                         modifier = Modifier
-                            .size(80.dp)
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(
-                                Brush.linearGradient(
-                                    colors = listOf(
-                                        MaterialTheme.colorScheme.primary,
-                                        MaterialTheme.colorScheme.tertiary,
-                                    )
-                                )
-                            ),
+                            .size(64.dp)
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(MaterialTheme.colorScheme.onBackground),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             imageVector = Icons.Filled.PhoneInTalk,
                             contentDescription = null,
-                            modifier = Modifier.size(40.dp),
+                            modifier = Modifier.size(32.dp),
                             tint = Color.White,
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(28.dp))
+                    Spacer(modifier = Modifier.height(32.dp))
 
                     Text(
-                        text = "Welcome Back",
-                        style = MaterialTheme.typography.headlineLarge,
+                        text = "Welcome",
+                        style = MaterialTheme.typography.displaySmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground,
+                        letterSpacing = (-1.5).sp,
+                    )
+                    Text(
+                        text = "back.",
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.Light,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        letterSpacing = (-1.5).sp,
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
                         text = "Sign in to your CRM account",
@@ -129,14 +139,21 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(56.dp))
 
+            // Form — left-aligned with breathing room
             AnimatedVisibility(
                 visible = showContent,
-                enter = fadeIn(animationSpec = tween(600, delayMillis = 200)) + slideInVertically(
-                    animationSpec = tween(600, delayMillis = 200),
-                    initialOffsetY = { it / 4 }
+                enter = fadeIn(animationSpec = tween(800, delayMillis = 300)) + slideInVertically(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow,
+                    ),
+                    initialOffsetY = { it / 3 },
                 ),
             ) {
-                Column {
+                Column(
+                    modifier = Modifier.padding(horizontal = 32.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
+                ) {
                     OutlinedTextField(
                         value = uiState.username,
                         onValueChange = viewModel::onUsernameChanged,
@@ -153,11 +170,15 @@ fun LoginScreen(
                             imeAction = ImeAction.Next,
                         ),
                         keyboardActions = KeyboardActions(
-                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                            onNext = { focusManager.moveFocus(FocusDirection.Down) },
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedBorderColor = MaterialTheme.colorScheme.onBackground,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent,
                         ),
                     )
-
-                    Spacer(modifier = Modifier.height(20.dp))
 
                     OutlinedTextField(
                         value = uiState.password,
@@ -191,11 +212,17 @@ fun LoginScreen(
                             onDone = {
                                 focusManager.clearFocus()
                                 viewModel.login()
-                            }
+                            },
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedBorderColor = MaterialTheme.colorScheme.onBackground,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent,
                         ),
                     )
 
-                    Spacer(modifier = Modifier.height(36.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Button(
                         onClick = {
@@ -207,11 +234,11 @@ fun LoginScreen(
                             .height(56.dp),
                         shape = MaterialTheme.shapes.medium,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
+                            containerColor = MaterialTheme.colorScheme.onBackground,
                         ),
                         elevation = ButtonDefaults.buttonElevation(
-                            defaultElevation = 8.dp,
-                            pressedElevation = 2.dp,
+                            defaultElevation = 0.dp,
+                            pressedElevation = 0.dp,
                         ),
                         enabled = !uiState.isLoading,
                     ) {
@@ -221,16 +248,16 @@ fun LoginScreen(
                                 horizontalArrangement = Arrangement.Center,
                             ) {
                                 CircularProgressIndicator(
-                                    modifier = Modifier.size(22.dp),
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    strokeWidth = 2.5.dp,
+                                    modifier = Modifier.size(20.dp),
+                                    color = MaterialTheme.colorScheme.background,
+                                    strokeWidth = 2.dp,
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(
                                     "Signing in...",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    color = MaterialTheme.colorScheme.background,
                                 )
                             }
                         } else {
@@ -238,14 +265,14 @@ fun LoginScreen(
                                 "Sign In",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.background,
                             )
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
+
+            Spacer(modifier = Modifier.height(64.dp))
         }
 
         SnackbarHost(
@@ -258,7 +285,7 @@ fun LoginScreen(
                     snackbarData = data,
                     containerColor = MaterialTheme.colorScheme.errorContainer,
                     contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                    shape = MaterialTheme.shapes.medium,
+                    shape = MaterialTheme.shapes.small,
                 )
             },
         )

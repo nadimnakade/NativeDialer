@@ -1,7 +1,7 @@
 package com.crm.v2.presentation.ui.ringingcalls;
 
 import com.crm.v2.data.datastore.AuthDataStore;
-import com.crm.v2.domain.repository.DialerRepository;
+import com.crm.v2.domain.repository.LeadRepository;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.Provider;
@@ -27,35 +27,35 @@ import javax.annotation.processing.Generated;
     "nullness:initialization.field.uninitialized"
 })
 public final class RingingCallsViewModel_Factory implements Factory<RingingCallsViewModel> {
-  private final Provider<DialerRepository> dialerRepositoryProvider;
+  private final Provider<LeadRepository> leadRepositoryProvider;
 
   private final Provider<AuthDataStore> authDataStoreProvider;
 
-  public RingingCallsViewModel_Factory(Provider<DialerRepository> dialerRepositoryProvider,
+  public RingingCallsViewModel_Factory(Provider<LeadRepository> leadRepositoryProvider,
       Provider<AuthDataStore> authDataStoreProvider) {
-    this.dialerRepositoryProvider = dialerRepositoryProvider;
+    this.leadRepositoryProvider = leadRepositoryProvider;
     this.authDataStoreProvider = authDataStoreProvider;
   }
 
   @Override
   public RingingCallsViewModel get() {
-    return newInstance(dialerRepositoryProvider.get(), authDataStoreProvider.get());
+    return newInstance(leadRepositoryProvider.get(), authDataStoreProvider.get());
   }
 
   public static RingingCallsViewModel_Factory create(
-      javax.inject.Provider<DialerRepository> dialerRepositoryProvider,
+      javax.inject.Provider<LeadRepository> leadRepositoryProvider,
       javax.inject.Provider<AuthDataStore> authDataStoreProvider) {
-    return new RingingCallsViewModel_Factory(Providers.asDaggerProvider(dialerRepositoryProvider), Providers.asDaggerProvider(authDataStoreProvider));
+    return new RingingCallsViewModel_Factory(Providers.asDaggerProvider(leadRepositoryProvider), Providers.asDaggerProvider(authDataStoreProvider));
   }
 
   public static RingingCallsViewModel_Factory create(
-      Provider<DialerRepository> dialerRepositoryProvider,
+      Provider<LeadRepository> leadRepositoryProvider,
       Provider<AuthDataStore> authDataStoreProvider) {
-    return new RingingCallsViewModel_Factory(dialerRepositoryProvider, authDataStoreProvider);
+    return new RingingCallsViewModel_Factory(leadRepositoryProvider, authDataStoreProvider);
   }
 
-  public static RingingCallsViewModel newInstance(DialerRepository dialerRepository,
+  public static RingingCallsViewModel newInstance(LeadRepository leadRepository,
       AuthDataStore authDataStore) {
-    return new RingingCallsViewModel(dialerRepository, authDataStore);
+    return new RingingCallsViewModel(leadRepository, authDataStore);
   }
 }

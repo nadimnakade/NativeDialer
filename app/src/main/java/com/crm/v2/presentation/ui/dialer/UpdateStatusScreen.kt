@@ -134,7 +134,28 @@ fun UpdateStatusScreen(
         Text("Call Status *", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(8.dp))
 
-        StatusConstants.allStatuses.chunked(3).forEach { row ->
+        val isCallConnected = state.callDuration > 0
+        val availableStatuses = if (isCallConnected) StatusConstants.connectedStatuses else StatusConstants.notConnectedStatuses
+
+        if (!isCallConnected) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                ),
+            ) {
+                Text(
+                    "Call was not connected. Only Ringing/Not Contactable available.",
+                    modifier = Modifier.padding(10.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        availableStatuses.chunked(3).forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -302,8 +323,22 @@ fun UpdateStatusScreen(
                 onClick = {
                     if (leadKey.isEmpty() && state.clientName.isBlank()) {
                         state = state.copy(error = "Please Enter Client Name")
+                    } else if (state.selectedStatus == null) {
+                        state = state.copy(error = "Please select a status")
                     } else {
-                        onSave(state)
+                        val selected = state.selectedStatus!!
+                        val connected = state.callDuration > 0
+                        val statusValue = selected.value
+                        val isRingingOrNC = statusValue == StatusConstants.RINGING || statusValue == StatusConstants.NOT_CONTACTABLE
+
+                        if (!connected && !isRingingOrNC) {
+                            state = state.copy(error = "Call was not connected. Only Ringing or Not Contactable allowed.")
+                        } else if (connected && isRingingOrNC) {
+                            state = state.copy(error = "Call was connected. Cannot select Ringing or Not Contactable.")
+                        } else {
+                            state = state.copy(error = null)
+                            onSave(state)
+                        }
                     }
                 },
                 modifier = Modifier.weight(1f),

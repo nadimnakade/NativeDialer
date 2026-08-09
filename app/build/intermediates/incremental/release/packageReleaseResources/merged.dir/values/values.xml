@@ -31,7 +31,7 @@
     <string name="app_name">CRM</string>
     <string name="app_preferences">App Preferences</string>
     <string name="attendance_title">Attendance</string>
-    <string name="com.google.firebase.crashlytics.mapping_file_id" ns1:ignore="UnusedResources,TypographyDashes" translatable="false">3c38b3596f8d40b9871dc4ab30fd8364</string>
+    <string name="com.google.firebase.crashlytics.mapping_file_id" ns1:ignore="UnusedResources,TypographyDashes" translatable="false">a0ba070ad5e345d3ac00516571237e07</string>
     <string name="dark_mode">Dark Mode</string>
     <string name="dark_mode_system">Follow System</string>
     <string name="dashboard_title">Dashboard</string>

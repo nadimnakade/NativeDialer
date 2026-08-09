@@ -14536,22 +14536,37 @@ com.crm.v2.common.result.ResourceKt
 com.crm.v2.data.database.dao.CallLogDao$DefaultImpls
 com.crm.v2.data.database.dao.SyncQueueDao$DefaultImpls
 com.crm.v2.data.datastore.AuthDataStore:
+    private static final java.lang.String KEY_ADDRESS
+    private static final java.lang.String KEY_BANK_ACCOUNT
+    private static final java.lang.String KEY_DATE_OF_BIRTH
+    private static final java.lang.String KEY_DATE_OF_JOINING
+    private static final java.lang.String KEY_DESIGNATION_DESC
     private static final java.lang.String KEY_EMPLOYEE_NAME
     private static final java.lang.String KEY_FCM_TOKEN
     private static final java.lang.String KEY_IS_LOGGED_IN
+    private static final java.lang.String KEY_OFFICE_CONTACT
+    private static final java.lang.String KEY_PHOTO_URL
     private static final java.lang.String KEY_PIN_HASH
     private static final java.lang.String KEY_REFRESH_TOKEN
+    private static final java.lang.String KEY_REPORTING_MANAGER
+    private static final java.lang.String KEY_ROLE_DESC
     private static final java.lang.String KEY_TOKEN
     private static final java.lang.String KEY_TOKEN_EXPIRY
     private static final java.lang.String KEY_USER_KEY
+    private static final java.lang.String KEY_USER_NAME
     private static final java.lang.String PREFS_FILE
-    public final void clear()
     public final java.lang.String getFcmToken()
     public final java.lang.String getPinHash()
     public final java.lang.String getRefreshToken()
     public final long getTokenExpiry()
+    public final void setAddress(java.lang.String)
+    public final void setBankAccountNo(java.lang.String)
+    public final void setDateOfBirth(java.lang.String)
+    public final void setDateOfJoining(java.lang.String)
+    public final void setOfficeContactNo(java.lang.String)
     public final void setPinHash(java.lang.String)
     public final void setRefreshToken(java.lang.String)
+    public final void setReportingManagerName(java.lang.String)
 com.crm.v2.data.datastore.SettingsDataStore$setLastSyncTimestamp$2
 com.crm.v2.data.datastore.SettingsDataStore$special$$inlined$map$1$2$1:
     java.lang.Object L$0
@@ -14579,7 +14594,6 @@ com.crm.v2.data.repository.AuthRepositoryImpl:
     public kotlinx.coroutines.flow.Flow isLoggedIn()
     public java.lang.Object isPinSet(kotlin.coroutines.Continuation)
     public java.lang.Object loginMobile(java.lang.String,java.lang.String,kotlin.coroutines.Continuation)
-    public java.lang.Object logout(kotlin.coroutines.Continuation)
     public java.lang.Object saveFcmToken(java.lang.String,kotlin.coroutines.Continuation)
     public java.lang.Object savePin(java.lang.String,kotlin.coroutines.Continuation)
     private static final java.lang.CharSequence savePin$lambda$2(byte)
@@ -14734,7 +14748,6 @@ com.crm.v2.domain.repository.AuthRepository:
     public abstract kotlinx.coroutines.flow.Flow isLoggedIn()
     public abstract java.lang.Object isPinSet(kotlin.coroutines.Continuation)
     public abstract java.lang.Object loginMobile(java.lang.String,java.lang.String,kotlin.coroutines.Continuation)
-    public abstract java.lang.Object logout(kotlin.coroutines.Continuation)
     public abstract java.lang.Object saveFcmToken(java.lang.String,kotlin.coroutines.Continuation)
     public abstract java.lang.Object savePin(java.lang.String,kotlin.coroutines.Continuation)
     public abstract java.lang.Object verifyPin(java.lang.String,kotlin.coroutines.Continuation)
@@ -14953,14 +14966,20 @@ com.crm.v2.presentation.ui.common.LoadingAnimationKt:
 com.crm.v2.presentation.ui.components.CommonComponentsKt$CrmTopBar$1
 com.crm.v2.presentation.ui.components.CommonComponentsKt$CrmTopBar$2
 com.crm.v2.presentation.ui.components.CommonComponentsKt$GradientStatCard$1
+com.crm.v2.presentation.ui.components.CommonComponentsKt$ScreenWithErrorSnackbar$2$1
 com.crm.v2.presentation.ui.components.CommonComponentsKt:
     public static final void CrmTopBar(java.lang.String,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function3,androidx.compose.runtime.Composer,int,int)
     private static final kotlin.Unit CrmTopBar$lambda$0(java.lang.String,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function3,int,int,androidx.compose.runtime.Composer,int)
+    public static final void ErrorSnackbarHost(androidx.compose.material3.SnackbarHostState,androidx.compose.runtime.Composer,int)
+    private static final kotlin.Unit ErrorSnackbarHost$lambda$12(androidx.compose.material3.SnackbarHostState,int,androidx.compose.runtime.Composer,int)
     public static final void GradientStatCard(java.lang.String,java.lang.String,androidx.compose.ui.Modifier,java.util.List,androidx.compose.runtime.Composer,int,int)
     private static final kotlin.Unit GradientStatCard$lambda$8(java.lang.String,java.lang.String,androidx.compose.ui.Modifier,java.util.List,int,int,androidx.compose.runtime.Composer,int)
+    public static final void ScreenWithErrorSnackbar(java.lang.String,kotlin.jvm.functions.Function0,androidx.compose.ui.Modifier,androidx.compose.material3.SnackbarHostState,kotlin.jvm.functions.Function3,androidx.compose.runtime.Composer,int,int)
+    private static final kotlin.Unit ScreenWithErrorSnackbar$lambda$15(java.lang.String,kotlin.jvm.functions.Function0,androidx.compose.ui.Modifier,androidx.compose.material3.SnackbarHostState,kotlin.jvm.functions.Function3,int,int,androidx.compose.runtime.Composer,int)
 com.crm.v2.presentation.ui.components.ComposableSingletons$CommonComponentsKt:
     public final kotlin.jvm.functions.Function3 getLambda-1$app_release()
     public final kotlin.jvm.functions.Function2 getLambda-2$app_release()
+    public final kotlin.jvm.functions.Function3 getLambda-4$app_release()
 com.crm.v2.presentation.ui.contacts.ContactsUiState:
     public void <init>()
     public final java.util.List component1()
@@ -15179,7 +15198,6 @@ com.crm.v2.presentation.ui.followup.FollowUpUiState:
     public final java.util.List component2()
     public final boolean component3()
     public final java.lang.String component4()
-    public final java.lang.String getError()
 com.crm.v2.presentation.ui.followup.FollowUpViewModel_Factory
 com.crm.v2.presentation.ui.followup.FollowUpViewModel_HiltModules$BindsModule
 com.crm.v2.presentation.ui.followup.FollowUpViewModel_HiltModules$KeyModule:
@@ -15245,7 +15263,6 @@ com.crm.v2.presentation.ui.leads.LeadListUiState:
     public final boolean component5()
     public final int component6()
     public final int getCurrentPage()
-    public final java.lang.String getError()
     public final boolean getHasMore()
 com.crm.v2.presentation.ui.leads.LeadListViewModel$loadMore$1
 com.crm.v2.presentation.ui.leads.LeadListViewModel:
@@ -15317,7 +15334,7 @@ com.crm.v2.presentation.ui.pickup.PickupViewModel_HiltModules_KeyModule_ProvideF
 com.crm.v2.presentation.ui.pickup.PickupViewModel_HiltModules_KeyModule_Provide_LazyMapKey:
     static com.crm.v2.presentation.ui.pickup.PickupViewModel keepFieldType
     public void <init>()
-com.crm.v2.presentation.ui.reports.ReportsScreenKt$PerformanceTab$lambda$5$lambda$4$$inlined$itemsIndexed$default$1
+com.crm.v2.presentation.ui.reports.ReportsScreenKt$PerformanceTab$lambda$6$lambda$5$$inlined$itemsIndexed$default$1
 com.crm.v2.presentation.ui.reports.ReportsUiState:
     public void <init>()
     public final int component1()
@@ -15326,7 +15343,6 @@ com.crm.v2.presentation.ui.reports.ReportsUiState:
     public final com.crm.v2.domain.model.LiveCount component4()
     public final boolean component5()
     public final java.lang.String component6()
-    public final java.lang.String getError()
 com.crm.v2.presentation.ui.reports.ReportsViewModel_Factory
 com.crm.v2.presentation.ui.reports.ReportsViewModel_HiltModules$BindsModule
 com.crm.v2.presentation.ui.reports.ReportsViewModel_HiltModules$KeyModule:
@@ -15417,14 +15433,22 @@ com.crm.v2.presentation.ui.settings.SettingsUiState:
     public static final int $stable
     public void <init>()
     public final com.crm.v2.data.datastore.DarkModePreference component1()
+    public final java.lang.String component10()
+    public final java.lang.String component11()
+    public final java.lang.String component12()
+    public final java.lang.String component13()
+    public final java.lang.String component14()
+    public final java.lang.String component15()
     public final int component2()
     public final boolean component3()
     public final java.lang.String component4()
     public final java.lang.String component5()
-com.crm.v2.presentation.ui.settings.SettingsViewModel$logout$1
-com.crm.v2.presentation.ui.settings.SettingsViewModel:
-    public static final synthetic com.crm.v2.domain.repository.AuthRepository access$getAuthRepository$p(com.crm.v2.presentation.ui.settings.SettingsViewModel)
-    public final void logout()
+    public final java.lang.String component6()
+    public final java.lang.String component7()
+    public final java.lang.String component8()
+    public final java.lang.String component9()
+    public final java.lang.String getPhotoUrl()
+    public final java.lang.String getUserName()
 com.crm.v2.presentation.ui.settings.SettingsViewModel_Factory
 com.crm.v2.presentation.ui.settings.SettingsViewModel_HiltModules$BindsModule
 com.crm.v2.presentation.ui.settings.SettingsViewModel_HiltModules$KeyModule:
@@ -68709,15 +68733,30 @@ com.crm.v2.data.datastore.AuthDataStore:
     public static final com.crm.v2.data.datastore.AuthDataStore$Companion Companion
     public final androidx.security.crypto.MasterKey masterKey
     static void <clinit>()
+    public static void clear()
     public static java.lang.String getAccessToken()
+    public static java.lang.String getAddress()
+    public static java.lang.String getBankAccountNo()
+    public static java.lang.String getDateOfBirth()
+    public static java.lang.String getDateOfJoining()
+    public static java.lang.String getDesignationDesc()
     public static java.lang.String getEmployeeName()
+    public static java.lang.String getOfficeContactNo()
+    public static java.lang.String getPhotoUrl()
+    public static java.lang.String getReportingManagerName()
+    public static java.lang.String getRoleDesc()
+    public static java.lang.String getUserName()
     public static boolean isLoggedIn()
     public static void setAccessToken()
+    public static void setDesignationDesc()
     public static void setEmployeeName()
     public static void setFcmToken()
     public final void setLoggedIn()
+    public static void setPhotoUrl()
+    public static void setRoleDesc()
     public static void setTokenExpiry()
     public final void setUserKey(java.lang.String)
+    public static void setUserName()
 com.crm.v2.data.datastore.DarkModePreference:
     public static final enum com.crm.v2.data.datastore.DarkModePreference DARK
     public static final enum com.crm.v2.data.datastore.DarkModePreference LIGHT
@@ -68759,6 +68798,7 @@ com.crm.v2.data.repository.AuthRepositoryImpl$Companion:
 com.crm.v2.data.repository.AuthRepositoryImpl:
     public static final int $stable
     public static final com.crm.v2.data.repository.AuthRepositoryImpl$Companion Companion
+    public final java.lang.Object logout()
 com.crm.v2.data.repository.ContactRepositoryImpl$getCachedContacts$$inlined$map$1
 com.crm.v2.data.repository.ContactRepositoryImpl$searchContacts$$inlined$map$1
 com.crm.v2.data.repository.ContactRepositoryImpl:
@@ -68856,6 +68896,7 @@ com.crm.v2.domain.model.User:
     static void <clinit>()
 com.crm.v2.domain.repository.AuthRepository:
     public abstract java.lang.Object login(java.lang.String,java.lang.String,java.lang.String,kotlin.coroutines.jvm.internal.ContinuationImpl)
+    public abstract java.lang.Object logout()
 com.crm.v2.domain.repository.ContactRepository:
     public abstract com.crm.v2.data.repository.ContactRepositoryImpl$getCachedContacts$$inlined$map$1 getCachedContacts()
     public abstract kotlinx.coroutines.flow.Flow searchContacts()
@@ -68942,11 +68983,11 @@ com.crm.v2.presentation.navigation.ComposableSingletons$NavGraphKt$lambda-10$1:
 com.crm.v2.presentation.navigation.ComposableSingletons$NavGraphKt$lambda-11$1:
     public final void invoke$7()
 com.crm.v2.presentation.navigation.ComposableSingletons$NavGraphKt$lambda-12$1:
-    public final void invoke$7()
-com.crm.v2.presentation.navigation.ComposableSingletons$NavGraphKt$lambda-13$1:
-    public static synthetic kotlin.Unit $r8$lambda$bUcLtEKe4_K1khB1Jh31xizO7Pw()
+    public static synthetic kotlin.Unit $r8$lambda$R9qzSpDjovDzl2ga1ym-NcklB_k()
     public final void invoke$7()
     public static final kotlin.Unit invoke$lambda$1$lambda$0()
+com.crm.v2.presentation.navigation.ComposableSingletons$NavGraphKt$lambda-13$1:
+    public final void invoke$7()
 com.crm.v2.presentation.navigation.ComposableSingletons$NavGraphKt$lambda-14$1:
     public final void invoke$7()
 com.crm.v2.presentation.navigation.ComposableSingletons$NavGraphKt$lambda-15$1:
@@ -68962,8 +69003,6 @@ com.crm.v2.presentation.navigation.ComposableSingletons$NavGraphKt$lambda-19$1:
 com.crm.v2.presentation.navigation.ComposableSingletons$NavGraphKt$lambda-2$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.crm.v2.presentation.navigation.ComposableSingletons$NavGraphKt$lambda-20$1:
-    public final void invoke$7()
-com.crm.v2.presentation.navigation.ComposableSingletons$NavGraphKt$lambda-21$1:
     public final void invoke$7()
 com.crm.v2.presentation.navigation.ComposableSingletons$NavGraphKt$lambda-3$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
@@ -68994,7 +69033,6 @@ com.crm.v2.presentation.navigation.ComposableSingletons$NavGraphKt:
     public static kotlin.jvm.functions.Function4 getLambda-19$app_release()
     public static kotlin.jvm.functions.Function2 getLambda-2$app_release()
     public static kotlin.jvm.functions.Function4 getLambda-20$app_release()
-    public static kotlin.jvm.functions.Function4 getLambda-21$app_release()
     public static kotlin.jvm.functions.Function2 getLambda-3$app_release()
     public static kotlin.jvm.functions.Function2 getLambda-4$app_release()
     public static kotlin.jvm.functions.Function2 getLambda-5$app_release()
@@ -69038,11 +69076,11 @@ com.crm.v2.presentation.navigation.NavGraphKt$NavGraph$3$1$1$15:
 com.crm.v2.presentation.navigation.NavGraphKt$NavGraph$3$1$1$16:
     public final void invoke$7()
 com.crm.v2.presentation.navigation.NavGraphKt$NavGraph$3$1$1$17:
-    public static synthetic kotlin.Unit $r8$lambda$I_6baQguPhIzoLoERfRBtQ0qPJU()
+    public final void invoke$7()
+com.crm.v2.presentation.navigation.NavGraphKt$NavGraph$3$1$1$18:
+    public static synthetic kotlin.Unit $r8$lambda$iokAwHdbS2eH-q__gqZQBOnyjuY()
     public final void invoke$7()
     public static final kotlin.Unit invoke$lambda$3$lambda$2()
-com.crm.v2.presentation.navigation.NavGraphKt$NavGraph$3$1$1$19:
-    public final void invoke$7()
 com.crm.v2.presentation.navigation.NavGraphKt$NavGraph$3$1$1$1:
     public final void invoke$7()
 com.crm.v2.presentation.navigation.NavGraphKt$NavGraph$3$1$1$20:
@@ -69050,6 +69088,8 @@ com.crm.v2.presentation.navigation.NavGraphKt$NavGraph$3$1$1$20:
 com.crm.v2.presentation.navigation.NavGraphKt$NavGraph$3$1$1$21:
     public final void invoke$7()
 com.crm.v2.presentation.navigation.NavGraphKt$NavGraph$3$1$1$22:
+    public final void invoke$7()
+com.crm.v2.presentation.navigation.NavGraphKt$NavGraph$3$1$1$23:
     public final void invoke$7()
 com.crm.v2.presentation.navigation.NavGraphKt$NavGraph$3$1$1$2:
     public final void invoke$7()
@@ -69316,6 +69356,8 @@ com.crm.v2.presentation.ui.components.ComposableSingletons$CommonComponentsKt$la
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.crm.v2.presentation.ui.components.ComposableSingletons$CommonComponentsKt$lambda-3$1:
     public final void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.components.ComposableSingletons$CommonComponentsKt$lambda-4$1:
+    public final void invoke(androidx.compose.material3.SnackbarData,androidx.compose.runtime.Composer,int)
 com.crm.v2.presentation.ui.components.ComposableSingletons$CommonComponentsKt:
     public static final com.crm.v2.presentation.ui.components.ComposableSingletons$CommonComponentsKt INSTANCE
     public static kotlin.jvm.functions.Function3 getLambda-3$app_release()
@@ -70000,29 +70042,41 @@ com.crm.v2.presentation.ui.documentupload.DocumentUploadViewModel_HiltModules_Ke
 com.crm.v2.presentation.ui.documentupload.UriUtil:
     public static final com.crm.v2.presentation.ui.documentupload.UriUtil INSTANCE
     static void <clinit>()
-com.crm.v2.presentation.ui.followup.FollowUpScreenKt$$InternalSyntheticLambda$6$4b76e14d7d2ecea7b4e99165653b69324f7e8e065c1305f6dba233525f416034$1:
+com.crm.v2.presentation.ui.followup.ComposableSingletons$FollowUpScreenKt$lambda-1$1:
+    public final void invoke(androidx.compose.material3.SnackbarData,androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.followup.ComposableSingletons$FollowUpScreenKt:
+    public static final com.crm.v2.presentation.ui.followup.ComposableSingletons$FollowUpScreenKt INSTANCE
+    public static kotlin.jvm.functions.Function3 getLambda-1$app_release()
+com.crm.v2.presentation.ui.followup.FollowUpScreenKt$$InternalSyntheticLambda$6$4b76e14d7d2ecea7b4e99165653b69324f7e8e065c1305f6dba233525f416034$0:
     public final synthetic int f$3
-com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$1$1$1$2:
-    public final void invoke(androidx.compose.runtime.Composer,int)
 com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$1$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$2:
     public final void invoke(androidx.compose.runtime.Composer,int)
-com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$1$2$1$2$1$1:
+com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$3$1$1$1$2:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$3$1$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$3$1$2$1$2$1$1:
     public final void invoke()
-com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$1$2$1$2$2:
+com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$3$1$2$1$2$2:
     public final void invoke(androidx.compose.foundation.layout.ColumnScope,androidx.compose.runtime.Composer,int)
-com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$lambda$6$lambda$5$lambda$4$$inlined$items$default$1
-com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$lambda$6$lambda$5$lambda$4$$inlined$items$default$2:
+com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$3$invoke$lambda$5$lambda$4$lambda$3$$inlined$items$default$1
+com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$3$invoke$lambda$5$lambda$4$lambda$3$$inlined$items$default$2:
     public final java.lang.Object invoke(int)
-com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$lambda$6$lambda$5$lambda$4$$inlined$items$default$3:
-    public final synthetic com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$lambda$6$lambda$5$lambda$4$$inlined$items$default$1 $contentType
+com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$3$invoke$lambda$5$lambda$4$lambda$3$$inlined$items$default$3:
+    public final synthetic com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$3$invoke$lambda$5$lambda$4$lambda$3$$inlined$items$default$1 $contentType
     public final java.lang.Object invoke(int)
-com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$lambda$6$lambda$5$lambda$4$$inlined$items$default$4:
+com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$3$invoke$lambda$5$lambda$4$lambda$3$$inlined$items$default$4:
     public final void invoke(androidx.compose.foundation.lazy.LazyItemScope,int,androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.followup.FollowUpScreenKt$FollowUpScreen$3:
+    public final void invoke$10()
 com.crm.v2.presentation.ui.followup.FollowUpUiState:
     public static final int $stable
     static void <clinit>()
     public static com.crm.v2.presentation.ui.followup.FollowUpUiState copy()
     public static int getActiveTab()
+    public static java.lang.String getError()
     public static java.util.List getRecords()
     public static boolean isLoading()
 com.crm.v2.presentation.ui.followup.FollowUpViewModel$loadRecords$1:
@@ -70030,6 +70084,7 @@ com.crm.v2.presentation.ui.followup.FollowUpViewModel$loadRecords$1:
 com.crm.v2.presentation.ui.followup.FollowUpViewModel:
     public static final int $stable
     static void <clinit>()
+    public final void clearError()
     public final kotlinx.coroutines.flow.StateFlow getUiState()
     public final void setActiveTab()
 com.crm.v2.presentation.ui.followup.FollowUpViewModel_HiltModules$KeyModule
@@ -70110,12 +70165,15 @@ com.crm.v2.presentation.ui.leads.ComposableSingletons$LeadListScreenKt$lambda-3$
     public final void invoke$12()
 com.crm.v2.presentation.ui.leads.ComposableSingletons$LeadListScreenKt$lambda-4$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.leads.ComposableSingletons$LeadListScreenKt$lambda-5$1:
+    public final void invoke(androidx.compose.material3.SnackbarData,androidx.compose.runtime.Composer,int)
 com.crm.v2.presentation.ui.leads.ComposableSingletons$LeadListScreenKt:
     public static final com.crm.v2.presentation.ui.leads.ComposableSingletons$LeadListScreenKt INSTANCE
     public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
     public static kotlin.jvm.functions.Function2 getLambda-2$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-3$app_release()
     public static kotlin.jvm.functions.Function2 getLambda-4$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-5$app_release()
 com.crm.v2.presentation.ui.leads.LeadDetailScreenKt$$InternalSyntheticLambda$6$a301e59a23b04848615ebbbc0ab528a816c81749f2b764c2519ea47e8d7941c5$1:
     public final synthetic int f$4
 com.crm.v2.presentation.ui.leads.LeadDetailScreenKt$LeadDetailScreen$1$1:
@@ -70152,20 +70210,23 @@ com.crm.v2.presentation.ui.leads.LeadListScreenKt$$InternalSyntheticLambda$6$0ad
     public final synthetic int f$4
 com.crm.v2.presentation.ui.leads.LeadListScreenKt$LeadCard$1:
     public final void invoke(androidx.compose.foundation.layout.ColumnScope,androidx.compose.runtime.Composer,int)
-com.crm.v2.presentation.ui.leads.LeadListScreenKt$LeadListScreen$1$2$1$2$1$1:
+com.crm.v2.presentation.ui.leads.LeadListScreenKt$LeadListScreen$1$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.crm.v2.presentation.ui.leads.LeadListScreenKt$LeadListScreen$2$1$2$1$2$1$1:
     public final void invoke()
-com.crm.v2.presentation.ui.leads.LeadListScreenKt$LeadListScreen$lambda$8$lambda$7$lambda$6$$inlined$items$default$1
-com.crm.v2.presentation.ui.leads.LeadListScreenKt$LeadListScreen$lambda$8$lambda$7$lambda$6$$inlined$items$default$2:
+com.crm.v2.presentation.ui.leads.LeadListScreenKt$LeadListScreen$lambda$11$lambda$10$lambda$9$lambda$8$$inlined$items$default$1
+com.crm.v2.presentation.ui.leads.LeadListScreenKt$LeadListScreen$lambda$11$lambda$10$lambda$9$lambda$8$$inlined$items$default$2:
     public final java.lang.Object invoke(int)
-com.crm.v2.presentation.ui.leads.LeadListScreenKt$LeadListScreen$lambda$8$lambda$7$lambda$6$$inlined$items$default$3:
-    public final synthetic com.crm.v2.presentation.ui.leads.LeadListScreenKt$LeadListScreen$lambda$8$lambda$7$lambda$6$$inlined$items$default$1 $contentType
+com.crm.v2.presentation.ui.leads.LeadListScreenKt$LeadListScreen$lambda$11$lambda$10$lambda$9$lambda$8$$inlined$items$default$3:
+    public final synthetic com.crm.v2.presentation.ui.leads.LeadListScreenKt$LeadListScreen$lambda$11$lambda$10$lambda$9$lambda$8$$inlined$items$default$1 $contentType
     public final java.lang.Object invoke(int)
-com.crm.v2.presentation.ui.leads.LeadListScreenKt$LeadListScreen$lambda$8$lambda$7$lambda$6$$inlined$items$default$4:
+com.crm.v2.presentation.ui.leads.LeadListScreenKt$LeadListScreen$lambda$11$lambda$10$lambda$9$lambda$8$$inlined$items$default$4:
     public final void invoke(androidx.compose.foundation.lazy.LazyItemScope,int,androidx.compose.runtime.Composer,int)
 com.crm.v2.presentation.ui.leads.LeadListUiState:
     public static final int $stable
     static void <clinit>()
     public static com.crm.v2.presentation.ui.leads.LeadListUiState copy()
+    public static java.lang.String getError()
     public static java.util.List getLeads()
     public static boolean isLoading()
     public static boolean isLoadingMore()
@@ -70175,6 +70236,7 @@ com.crm.v2.presentation.ui.leads.LeadListViewModel:
     public static final int $stable
     public final com.crm.v2.data.datastore.AuthDataStore authDataStore
     static void <clinit>()
+    public final void clearError()
     public final kotlinx.coroutines.flow.StateFlow getUiState()
     public static void loadLeads()
 com.crm.v2.presentation.ui.leads.LeadListViewModel_HiltModules$KeyModule
@@ -70323,6 +70385,11 @@ com.crm.v2.presentation.ui.pickup.PickupViewModel_HiltModules_BindsModule_Binds_
 com.crm.v2.presentation.ui.pickup.PickupViewModel_HiltModules_KeyModule_Provide_LazyMapKey:
     public static java.lang.String lazyClassKeyName
     static void <clinit>()
+com.crm.v2.presentation.ui.reports.ComposableSingletons$ReportsScreenKt$lambda-1$1:
+    public final void invoke(androidx.compose.material3.SnackbarData,androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.reports.ComposableSingletons$ReportsScreenKt:
+    public static final com.crm.v2.presentation.ui.reports.ComposableSingletons$ReportsScreenKt INSTANCE
+    public static kotlin.jvm.functions.Function3 getLambda-1$app_release()
 com.crm.v2.presentation.ui.reports.ReportsScreenKt$$InternalSyntheticLambda$3$aae624db7cdd76dc47c81f43e75bd1f523494c22ffaa60d0ddb554656a696c3f$0:
     public final synthetic int f$2
 com.crm.v2.presentation.ui.reports.ReportsScreenKt$AttendanceTab$1$1:
@@ -70333,14 +70400,20 @@ com.crm.v2.presentation.ui.reports.ReportsScreenKt$LiveCountTab$1$2:
     public final void invoke(androidx.compose.foundation.layout.ColumnScope,androidx.compose.runtime.Composer,int)
 com.crm.v2.presentation.ui.reports.ReportsScreenKt$PerformanceTab$1$1$1$1:
     public final void invoke(androidx.compose.foundation.layout.ColumnScope,androidx.compose.runtime.Composer,int)
-com.crm.v2.presentation.ui.reports.ReportsScreenKt$PerformanceTab$lambda$5$lambda$4$$inlined$itemsIndexed$default$2:
+com.crm.v2.presentation.ui.reports.ReportsScreenKt$PerformanceTab$lambda$6$lambda$5$$inlined$itemsIndexed$default$2:
     public final java.lang.Object invoke(int)
-com.crm.v2.presentation.ui.reports.ReportsScreenKt$PerformanceTab$lambda$5$lambda$4$$inlined$itemsIndexed$default$3:
+com.crm.v2.presentation.ui.reports.ReportsScreenKt$PerformanceTab$lambda$6$lambda$5$$inlined$itemsIndexed$default$3:
     public final void invoke(androidx.compose.foundation.lazy.LazyItemScope,int,androidx.compose.runtime.Composer,int)
-com.crm.v2.presentation.ui.reports.ReportsScreenKt$ReportsScreen$1$1$1$2:
-    public final void invoke(androidx.compose.runtime.Composer,int)
 com.crm.v2.presentation.ui.reports.ReportsScreenKt$ReportsScreen$1$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.crm.v2.presentation.ui.reports.ReportsScreenKt$ReportsScreen$2:
     public final void invoke(androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.reports.ReportsScreenKt$ReportsScreen$3$1$1$1$2:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.reports.ReportsScreenKt$ReportsScreen$3$1$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.reports.ReportsScreenKt$ReportsScreen$3:
+    public final void invoke$10()
 com.crm.v2.presentation.ui.reports.ReportsUiState:
     public static final int $stable
     static void <clinit>()
@@ -70348,6 +70421,7 @@ com.crm.v2.presentation.ui.reports.ReportsUiState:
     public static int getActiveTab()
     public static com.crm.v2.domain.model.AttendanceData getAttendance()
     public static com.crm.v2.domain.model.LiveCount getDialerLive()
+    public static java.lang.String getError()
     public static java.util.List getPerformance()
     public static boolean isLoading()
 com.crm.v2.presentation.ui.reports.ReportsViewModel$loadAll$1:
@@ -70356,6 +70430,7 @@ com.crm.v2.presentation.ui.reports.ReportsViewModel:
     public static final int $stable
     public final com.crm.v2.data.datastore.AuthDataStore authDataStore
     static void <clinit>()
+    public final void clearError()
     public final kotlinx.coroutines.flow.StateFlow getUiState()
     public static void loadAll()
     public final void setActiveTab()
@@ -70467,15 +70542,45 @@ com.crm.v2.presentation.ui.samedayfollowups.SameDayFollowUpsViewModel_HiltModule
 com.crm.v2.presentation.ui.samedayfollowups.SameDayFollowUpsViewModel_HiltModules_KeyModule_Provide_LazyMapKey:
     public static java.lang.String lazyClassKeyName
     static void <clinit>()
+com.crm.v2.presentation.ui.settings.ComposableSingletons$ProfileScreenKt$lambda-1$1:
+    public final void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.settings.ComposableSingletons$ProfileScreenKt$lambda-2$1:
+    public final void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.settings.ComposableSingletons$ProfileScreenKt$lambda-3$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.settings.ComposableSingletons$ProfileScreenKt$lambda-4$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.settings.ComposableSingletons$ProfileScreenKt$lambda-5$1:
+    public final void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.settings.ComposableSingletons$ProfileScreenKt:
+    public static final com.crm.v2.presentation.ui.settings.ComposableSingletons$ProfileScreenKt INSTANCE
+    public static kotlin.jvm.functions.Function3 getLambda-1$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-2$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-3$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-4$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-5$app_release()
 com.crm.v2.presentation.ui.settings.ComposableSingletons$SettingsScreenKt$lambda-1$1:
     public final void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int)
 com.crm.v2.presentation.ui.settings.ComposableSingletons$SettingsScreenKt:
     public static final com.crm.v2.presentation.ui.settings.ComposableSingletons$SettingsScreenKt INSTANCE
     public static kotlin.jvm.functions.Function3 getLambda-1$app_release()
-com.crm.v2.presentation.ui.settings.ProfileScreenKt$$InternalSyntheticLambda$3$e73f7fee17c20ae57f817d2a1c8ce1819e759488c6668ad436c93599e227ea80$0:
-    public final synthetic int f$2
-com.crm.v2.presentation.ui.settings.ProfileScreenKt$ProfileScreen$1$2:
+com.crm.v2.presentation.ui.settings.ProfileScreenKt$$InternalSyntheticLambda$6$9923711e6e6cd01418ce67e8297cf8a928b9ac084d053412dcd1fa1c44e47778$0
+com.crm.v2.presentation.ui.settings.ProfileScreenKt$$InternalSyntheticLambda$6$9923711e6e6cd01418ce67e8297cf8a928b9ac084d053412dcd1fa1c44e47778$3:
+    public final synthetic int f$3
+com.crm.v2.presentation.ui.settings.ProfileScreenKt$ProfileScreen$3:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.settings.ProfileScreenKt$ProfileScreen$4:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.settings.ProfileScreenKt$ProfileScreen$5$2$1:
     public final void invoke(androidx.compose.foundation.layout.ColumnScope,androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.settings.ProfileScreenKt$ProfileScreen$5$2$2:
+    public final void invoke(androidx.compose.foundation.layout.ColumnScope,androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.settings.ProfileScreenKt$ProfileScreen$5$2$3:
+    public final void invoke(androidx.compose.foundation.layout.ColumnScope,androidx.compose.runtime.Composer,int)
+com.crm.v2.presentation.ui.settings.ProfileScreenKt:
+    public static synthetic kotlin.Unit $r8$lambda$5L5B4LX-H3ilTTazJbnaC-bd-3o()
+    public static final kotlin.Unit ProfileScreen$lambda$1$lambda$0()
+    public static final void ProfileScreen$lambda$5(androidx.compose.runtime.MutableState,boolean)
 com.crm.v2.presentation.ui.settings.SettingsScreenKt$$InternalSyntheticLambda$6$20ffe322284e79e9f476e210cfca077a504d2f48622c877c499e9d8a31d179ac$0:
     public final synthetic int f$4
 com.crm.v2.presentation.ui.settings.SettingsScreenKt$SettingsScreen$1$1:
@@ -70491,11 +70596,19 @@ com.crm.v2.presentation.ui.settings.SettingsScreenKt$SettingsScreen$1$3:
 com.crm.v2.presentation.ui.settings.SettingsUiState:
     static void <clinit>()
     public static com.crm.v2.presentation.ui.settings.SettingsUiState copy()
+    public static java.lang.String getAddress()
     public static java.lang.String getAppVersion()
     public static int getAutoDialInterval()
+    public static java.lang.String getBankAccount()
     public static boolean getCallRecordingEnabled()
     public static com.crm.v2.data.datastore.DarkModePreference getDarkMode()
+    public static java.lang.String getDateOfBirth()
+    public static java.lang.String getDateOfJoining()
+    public static java.lang.String getDesignation()
     public static java.lang.String getEmployeeName()
+    public static java.lang.String getOfficeContact()
+    public static java.lang.String getReportingManager()
+    public static java.lang.String getRole()
 com.crm.v2.presentation.ui.settings.SettingsViewModel$1$1:
     public static java.lang.Object emit$5()
 com.crm.v2.presentation.ui.settings.SettingsViewModel$1:
@@ -70508,6 +70621,8 @@ com.crm.v2.presentation.ui.settings.SettingsViewModel$3$1:
     public final java.lang.Object emit(boolean,kotlin.coroutines.Continuation)
 com.crm.v2.presentation.ui.settings.SettingsViewModel$3:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.crm.v2.presentation.ui.settings.SettingsViewModel$logout$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.crm.v2.presentation.ui.settings.SettingsViewModel$setAutoDialInterval$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.crm.v2.presentation.ui.settings.SettingsViewModel$setCallRecordingEnabled$1:
@@ -70516,9 +70631,9 @@ com.crm.v2.presentation.ui.settings.SettingsViewModel$setDarkMode$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.crm.v2.presentation.ui.settings.SettingsViewModel:
     public static final int $stable
-    public final com.crm.v2.domain.repository.AuthRepository authRepository
     static void <clinit>()
     public final kotlinx.coroutines.flow.StateFlow getUiState()
+    public static void logout()
     public static void setAutoDialInterval()
     public static void setCallRecordingEnabled()
     public static void setDarkMode()
