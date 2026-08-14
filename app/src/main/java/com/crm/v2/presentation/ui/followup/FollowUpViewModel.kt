@@ -27,7 +27,7 @@ class FollowUpViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(FollowUpUiState())
     val uiState: StateFlow<FollowUpUiState> = _uiState.asStateFlow()
 
-    private val followUpTypes = listOf("F", "SF", "1Min", "R")
+    private val followUpTypes = listOf("F", "SF", "1MIN", "R")
 
     init { loadRecords() }
 
@@ -38,7 +38,7 @@ class FollowUpViewModel @Inject constructor(
 
     fun loadRecords() {
         val userKey = authDataStore.userKey ?: return
-        val type = followUpTypes.getOrNull(_uiState.value.activeTab) ?: "FU"
+        val type = followUpTypes.getOrNull(_uiState.value.activeTab) ?: "F"
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }

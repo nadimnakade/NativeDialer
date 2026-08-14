@@ -26,6 +26,7 @@ data class DialerUiState(
     val dialerQueue: List<DialerRecord> = emptyList(),
     val leadList: List<DialerRecord> = emptyList(),
     val followUpRecords: List<DialerRecord> = emptyList(),
+    val sameDayRecords: List<DialerRecord> = emptyList(),
     val ringingRecords: List<DialerRecord> = emptyList(),
     val oneMinRecords: List<DialerRecord> = emptyList(),
     val currentLead: DialerRecord? = null,
@@ -45,6 +46,8 @@ data class DialerUiState(
     val hasMoreLeads: Boolean = true,
     val showUpdateStatus: Boolean = false,
     val callDuration: Int = 0,
+    val callType: String = "A",
+    val callDate: String = "0",
     val isMuted: Boolean = false,
     val isSpeakerOn: Boolean = false,
     val isOnHold: Boolean = false,
@@ -75,11 +78,23 @@ class DialerViewModel @Inject constructor(
 
                 if (wasActive && nowIdle && _uiState.value.currentLead != null) {
                     val lead = _uiState.value.currentLead!!
-                    val duration = if (callStartTime > 0) ((System.currentTimeMillis() - callStartTime) / 1000).toInt() else 0
+                    val startTime = callStartTime
+                    val duration = if (startTime > 0) ((System.currentTimeMillis() - startTime) / 1000).toInt() else 0
                     callStartTime = 0L
+                    val cal = java.util.Calendar.getInstance()
+                    if (startTime > 0) cal.timeInMillis = startTime
+                    val callDateStr = "%02d/%02d/%04d %02d:%02d:%02d".format(
+                        cal.get(java.util.Calendar.DAY_OF_MONTH),
+                        cal.get(java.util.Calendar.MONTH) + 1,
+                        cal.get(java.util.Calendar.YEAR),
+                        cal.get(java.util.Calendar.HOUR_OF_DAY),
+                        cal.get(java.util.Calendar.MINUTE),
+                        cal.get(java.util.Calendar.SECOND),
+                    )
                     _uiState.update {
                         it.copy(
                             callDuration = duration,
+                            callDate = callDateStr,
                             showUpdateStatus = true,
                             isMuted = false,
                             isSpeakerOn = false,
@@ -122,14 +137,15 @@ class DialerViewModel @Inject constructor(
     }
 
     fun setActiveTab(tab: Int) {
-        _uiState.update { it.copy(activeTab = tab, phoneNumber = if (tab != 6) "" else it.phoneNumber) }
+        _uiState.update { it.copy(activeTab = tab, phoneNumber = if (tab != 1) "" else it.phoneNumber) }
         when (tab) {
             0 -> loadDialerQueue()
-            1 -> loadLeads(refresh = false)
-            2 -> loadFollowUp()
-            3 -> loadRinging()
-            4 -> loadOneMin()
-            5 -> loadContacts()
+            2 -> loadLeads(refresh = false)
+            3 -> loadFollowUp()
+            4 -> loadSameDayFollowUp()
+            5 -> loadRinging()
+            6 -> loadOneMin()
+            7 -> loadContacts()
         }
     }
 
@@ -186,6 +202,22 @@ class DialerViewModel @Inject constructor(
         }
     }
 
+    private fun loadSameDayFollowUp() {
+        val userKey = authDataStore.userKey ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            when (val result = leadRepository.getFollowUpLeads(userKey, "SF")) {
+                is com.crm.v2.common.result.Resource.Success -> _uiState.update {
+                    it.copy(sameDayRecords = result.data, isLoading = false)
+                }
+                is com.crm.v2.common.result.Resource.Error -> _uiState.update {
+                    it.copy(error = result.message, isLoading = false)
+                }
+                else -> {}
+            }
+        }
+    }
+
     private fun loadRinging() {
         val userKey = authDataStore.userKey ?: return
         viewModelScope.launch {
@@ -206,7 +238,7 @@ class DialerViewModel @Inject constructor(
         val userKey = authDataStore.userKey ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            when (val result = leadRepository.getFollowUpLeads(userKey, "1Min")) {
+            when (val result = leadRepository.getFollowUpLeads(userKey, "1MIN")) {
                 is com.crm.v2.common.result.Resource.Success -> _uiState.update {
                     it.copy(oneMinRecords = result.data, isLoading = false)
                 }
@@ -331,7 +363,7 @@ class DialerViewModel @Inject constructor(
 
     fun callContact(contact: Contact) {
         val number = contact.phoneNumbers.firstOrNull() ?: return
-        _uiState.update { it.copy(currentLead = DialerRecord(key = "", clientName = contact.name ?: "", contact = number)) }
+        _uiState.update { it.copy(currentLead = DialerRecord(key = "", clientName = contact.name ?: "", contact = number), callType = "M") }
         manualCall(number)
     }
 
@@ -341,6 +373,7 @@ class DialerViewModel @Inject constructor(
             it.copy(
                 currentLead = DialerRecord(key = "", clientName = "", contact = trimmed),
                 callDuration = 0,
+                callType = "M",
                 showUpdateStatus = false,
                 isMuted = false,
                 isSpeakerOn = false,
@@ -351,7 +384,15 @@ class DialerViewModel @Inject constructor(
     }
 
     fun callLead(lead: DialerRecord) {
-        _uiState.update { it.copy(currentLead = lead, showUpdateStatus = false, callDuration = 0) }
+        val tabType = when (_uiState.value.activeTab) {
+            0 -> "A"
+            3 -> "F"
+            4 -> "SF"
+            5 -> "R"
+            6 -> "1MIN"
+            else -> "A"
+        }
+        _uiState.update { it.copy(currentLead = lead, showUpdateStatus = false, callDuration = 0, callType = tabType) }
         callStartTime = 0L
         manualCall(lead.contact)
     }
@@ -424,10 +465,17 @@ class DialerViewModel @Inject constructor(
         key: String,
         status: String,
         callbackDate: String?,
+        callbackTime: String?,
         remarks: String?,
         userKey: String,
         callDuration: Int = 0,
-        isHLLAPBL: String = "",
+        callDate: String = "0",
+        callType: String = "A",
+        clientName: String = "",
+        mobileNo: String = "",
+        salary: String = "",
+        company: String = "",
+        isHLLAPBL: Int = 0,
         isCibilBad: Boolean = false,
         isRealEstate: Boolean = false,
     ) {
@@ -435,13 +483,39 @@ class DialerViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
             try {
-                val result = dialerRepository.updateDialer(
-                    key = key,
-                    status = status,
-                    callbackDate = callbackDate,
-                    remarks = remarks,
-                    userKey = userKey,
-                )
+                val durationStr = "${callDuration}@|0"
+                val result = if (callType == "M") {
+                    dialerRepository.insertLeadInfoNew(
+                        clientName = clientName,
+                        contact = mobileNo,
+                        salary = salary,
+                        company = company,
+                        remarks = remarks ?: "",
+                        status = status,
+                        callbackDate = callbackDate ?: "",
+                        callbackTime = callbackTime ?: "",
+                        callerDuration = durationStr,
+                        callDateTime = callDate,
+                        userKey = userKey,
+                        isHllapbl = isHLLAPBL,
+                        isCibilBad = if (isCibilBad) 1 else 0,
+                        isRealEstate = if (isRealEstate) 1 else 0,
+                    )
+                } else {
+                    dialerRepository.updateDialer(
+                        key = key,
+                        status = status,
+                        callbackDate = callbackDate,
+                        callbackTime = callbackTime,
+                        remarks = remarks,
+                        userKey = userKey,
+                        callDuration = durationStr,
+                        callDate = callDate,
+                        isHllapbl = isHLLAPBL,
+                        isCibilBad = if (isCibilBad) 1 else 0,
+                        isRealEstate = if (isRealEstate) 1 else 0,
+                    )
+                }
                 when (result) {
                     is com.crm.v2.common.result.Resource.Success -> {
                         _uiState.update { it.copy(lastCallMessage = "Status saved: $status", isSaving = false) }
@@ -455,20 +529,47 @@ class DialerViewModel @Inject constructor(
                 _uiState.update { it.copy(error = "Failed to save: ${e.message}", isSaving = false) }
             }
             _uiState.update { it.copy(showUpdateStatus = false, currentLead = null, callDuration = 0) }
-            if (shouldContinue) {
-                val userK = authDataStore.userKey ?: return@launch
-                dialerRepository.getDialerData(userK).let { result ->
-                    when (result) {
-                        is com.crm.v2.common.result.Resource.Success -> {
-                            _uiState.update { it.copy(dialerQueue = result.data) }
-                            autoDialNext()
+            reloadSourceTab(callType, shouldContinue)
+        }
+    }
+
+    private fun reloadSourceTab(callType: String, shouldContinue: Boolean) {
+        val userKey = authDataStore.userKey ?: return
+        when (callType) {
+            "F" -> refreshFollowUpTab(userKey, "F") { list -> _uiState.update { it.copy(followUpRecords = list) } }
+            "SF" -> refreshFollowUpTab(userKey, "SF") { list -> _uiState.update { it.copy(sameDayRecords = list) } }
+            "R" -> refreshFollowUpTab(userKey, "R") { list -> _uiState.update { it.copy(ringingRecords = list) } }
+            "1MIN" -> refreshFollowUpTab(userKey, "1MIN") { list -> _uiState.update { it.copy(oneMinRecords = list) } }
+            "M" -> {}
+            else -> {
+                if (_uiState.value.activeTab == 2) {
+                    loadLeads(refresh = true)
+                } else {
+                    viewModelScope.launch {
+                        dialerRepository.getDialerData(userKey).let { result ->
+                            when (result) {
+                                is com.crm.v2.common.result.Resource.Success -> {
+                                    _uiState.update { it.copy(dialerQueue = result.data) }
+                                    if (shouldContinue) autoDialNext()
+                                }
+                                is com.crm.v2.common.result.Resource.Error -> {
+                                    _uiState.update { it.copy(error = result.message, isAutoDialing = false) }
+                                }
+                                else -> {}
+                            }
                         }
-                        is com.crm.v2.common.result.Resource.Error -> {
-                            _uiState.update { it.copy(error = result.message, isAutoDialing = false) }
-                        }
-                        else -> {}
                     }
                 }
+            }
+        }
+    }
+
+    private fun refreshFollowUpTab(userKey: String, type: String, onSuccess: (List<DialerRecord>) -> Unit) {
+        viewModelScope.launch {
+            when (val result = leadRepository.getFollowUpLeads(userKey, type)) {
+                is com.crm.v2.common.result.Resource.Success -> onSuccess(result.data)
+                is com.crm.v2.common.result.Resource.Error -> _uiState.update { it.copy(error = result.message) }
+                else -> {}
             }
         }
     }
