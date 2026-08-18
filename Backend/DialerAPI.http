@@ -1,0 +1,6 @@
+@DialerAPI_HostAddress = http://localhost:5030
+
+GET {{DialerAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
