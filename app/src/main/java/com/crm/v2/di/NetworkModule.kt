@@ -10,7 +10,6 @@ import com.crm.v2.common.network.NetworkMonitor
 import com.crm.v2.common.network.NetworkMonitorImpl
 import com.crm.v2.data.network.interceptor.AuthInterceptor
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -116,7 +115,7 @@ object NetworkModule {
         return retrofit.create(SearchApplicationApi::class.java)
     }
 
-    @Binds
+    @Provides
     @Singleton
-    fun bindNetworkMonitor(impl: NetworkMonitorImpl): NetworkMonitor
+    fun provideNetworkMonitor(impl: NetworkMonitorImpl): NetworkMonitor = impl
 }
