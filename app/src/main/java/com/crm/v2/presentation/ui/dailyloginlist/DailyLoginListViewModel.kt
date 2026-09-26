@@ -14,6 +14,7 @@ import javax.inject.Inject
 data class DailyLoginListUiState(
     val entries: List<DailyLogin> = emptyList(),
     val isLoading: Boolean = false,
+    val error: String? = null,
 )
 
 @HiltViewModel
@@ -25,13 +26,15 @@ class DailyLoginListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DailyLoginListUiState())
     val uiState: StateFlow<DailyLoginListUiState> = _uiState.asStateFlow()
 
+    fun onErrorShown() { _uiState.update { it.copy(error = null) } }
+
     fun load() {
         val userKey = authDataStore.userKey ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             when (val result = dailyLoginRepository.getDailyLoginList(userKey)) {
                 is Resource.Success -> _uiState.update { it.copy(entries = result.data, isLoading = false) }
-                is Resource.Error -> _uiState.update { it.copy(isLoading = false) }
+                is Resource.Error -> _uiState.update { it.copy(error = result.message, isLoading = false) }
                 else -> {}
             }
         }

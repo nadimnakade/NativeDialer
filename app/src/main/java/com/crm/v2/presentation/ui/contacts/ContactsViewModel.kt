@@ -13,6 +13,7 @@ data class ContactsUiState(
     val contacts: List<Contact> = emptyList(),
     val searchQuery: String = "",
     val isLoading: Boolean = false,
+    val error: String? = null,
 )
 
 @HiltViewModel
@@ -23,11 +24,17 @@ class ContactsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ContactsUiState())
     val uiState: StateFlow<ContactsUiState> = _uiState.asStateFlow()
 
+    fun onErrorShown() { _uiState.update { it.copy(error = null) } }
+
     init {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            contactRepository.getCachedContacts().collect { contacts ->
-                _uiState.update { it.copy(contacts = contacts, isLoading = false) }
+            try {
+                contactRepository.getCachedContacts().collect { contacts ->
+                    _uiState.update { it.copy(contacts = contacts, isLoading = false) }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message ?: "Failed to load contacts", isLoading = false) }
             }
         }
     }
@@ -35,14 +42,18 @@ class ContactsViewModel @Inject constructor(
     fun onSearchQueryChanged(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
         viewModelScope.launch {
-            if (query.length >= 2) {
-                contactRepository.searchContacts(query).collect { contacts ->
-                    _uiState.update { it.copy(contacts = contacts) }
+            try {
+                if (query.length >= 2) {
+                    contactRepository.searchContacts(query).collect { contacts ->
+                        _uiState.update { it.copy(contacts = contacts) }
+                    }
+                } else {
+                    contactRepository.getCachedContacts().collect { contacts ->
+                        _uiState.update { it.copy(contacts = contacts) }
+                    }
                 }
-            } else {
-                contactRepository.getCachedContacts().collect { contacts ->
-                    _uiState.update { it.copy(contacts = contacts) }
-                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message ?: "Search failed") }
             }
         }
     }

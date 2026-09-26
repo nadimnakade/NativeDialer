@@ -4,7 +4,7 @@
 Production CRM Dialer Android app (Kotlin + Jetpack Compose) with 3 tabs (Auto / Lead / Contact), PJSIP-based calling, auto-dialer queue, call state display, and status update flow.
 
 ## Two Base URLs
-- **REST API**: `https://1up.co.in/DialerAPI/api/` — login, pickup, lead, dialer data
+- **REST API**: `https://1up.co.in/NEXUS_API/api/` — login, pickup, lead, dialer data
 - **PJSIP Server**: `sip2.cloud-connect.in:7065` (user `102724701`, pass `Tejas@001`)
 
 ## minSdk

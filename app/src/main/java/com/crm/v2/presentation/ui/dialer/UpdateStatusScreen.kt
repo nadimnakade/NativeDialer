@@ -2,6 +2,9 @@ package com.crm.v2.presentation.ui.dialer
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,12 +28,15 @@ data class UpdateStatusUiState(
     val clientName: String = "",
     val mobileNo: String = "",
     val callDuration: Int = 0,
+    val callType: String = "A",
     val selectedStatus: StatusOption? = null,
     val callbackDate: String = "",
     val callbackTime: String = "",
     val isHLLAPBL: String = "",
     val isCibilBad: Boolean = false,
     val isRealEstate: Boolean = false,
+    val salary: String = "",
+    val company: String = "",
     val addDailyLogin: Boolean = false,
     val losNo: String = "",
     val appNo: String = "",
@@ -50,6 +57,7 @@ fun UpdateStatusScreen(
     clientName: String = "",
     mobileNo: String = "",
     callDuration: Int = 0,
+    callType: String = "A",
     onSave: (UpdateStatusUiState) -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -60,6 +68,7 @@ fun UpdateStatusScreen(
                 clientName = clientName,
                 mobileNo = mobileNo,
                 callDuration = callDuration,
+                callType = callType,
             )
         )
     }
@@ -78,7 +87,7 @@ fun UpdateStatusScreen(
             fontWeight = FontWeight.Bold,
         )
 
-        if (leadKey.isEmpty()) {
+        if (callType == "M") {
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
                 value = state.clientName,
@@ -88,7 +97,38 @@ fun UpdateStatusScreen(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                ),
             )
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(
+                    value = state.salary,
+                    onValueChange = { state = state.copy(salary = it) },
+                    label = { Text("Salary") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    ),
+                )
+                OutlinedTextField(
+                    value = state.company,
+                    onValueChange = { state = state.copy(company = it) },
+                    label = { Text("Company") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    ),
+                )
+            }
         }
 
         if (clientName.isNotEmpty() || mobileNo.isNotEmpty()) {
@@ -301,11 +341,48 @@ fun UpdateStatusScreen(
             value = state.whatsappMessage,
             onValueChange = { state = state.copy(whatsappMessage = it) },
             label = { Text("WhatsApp Message") },
+            placeholder = { Text("Type message for WhatsApp") },
             modifier = Modifier.fillMaxWidth(),
             minLines = 2,
             maxLines = 3,
             shape = RoundedCornerShape(12.dp),
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = {
+                var phone = state.mobileNo
+                if (phone.length > 10) phone = phone.takeLast(10)
+                val message = state.whatsappMessage.trim()
+                if (message.isEmpty()) {
+                    Toast.makeText(context, "Please enter a message", Toast.LENGTH_SHORT).show()
+                } else if (phone.length < 10) {
+                    Toast.makeText(context, "Invalid phone number", Toast.LENGTH_SHORT).show()
+                } else {
+                    try {
+                        val url = "https://wa.me/91${phone}?text=${Uri.encode(message)}"
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        context.startActivity(intent)
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Could not open WhatsApp: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF25D366),
+            ),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Share,
+                contentDescription = "WhatsApp",
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Send on WhatsApp", fontWeight = FontWeight.SemiBold)
+        }
 
         state.error?.let {
             Spacer(modifier = Modifier.height(8.dp))
@@ -321,7 +398,7 @@ fun UpdateStatusScreen(
             ) { Text("Cancel") }
             Button(
                 onClick = {
-                    if (leadKey.isEmpty() && state.clientName.isBlank()) {
+                    if (callType == "M" && state.clientName.isBlank()) {
                         state = state.copy(error = "Please Enter Client Name")
                     } else if (state.selectedStatus == null) {
                         state = state.copy(error = "Please select a status")
@@ -335,6 +412,10 @@ fun UpdateStatusScreen(
                             state = state.copy(error = "Call was not connected. Only Ringing or Not Contactable allowed.")
                         } else if (connected && isRingingOrNC) {
                             state = state.copy(error = "Call was connected. Cannot select Ringing or Not Contactable.")
+                        } else if ((statusValue == StatusConstants.FOLLOW_UP || statusValue == StatusConstants.SAME_DAY_FOLLOW_UP) && (state.callbackDate.isBlank() || state.callbackTime.isBlank())) {
+                            state = state.copy(error = "Please enter Callback Date and Time for $statusValue")
+                        } else if (state.isHLLAPBL.isNotEmpty() && state.remarks.isBlank()) {
+                            state = state.copy(error = "Please enter Remarks when HL/LAP/BL/PL is selected")
                         } else {
                             state = state.copy(error = null)
                             onSave(state)

@@ -3,6 +3,7 @@ package com.crm.v2.presentation.ui.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crm.v2.common.result.Resource
+import com.crm.v2.data.config.ExtensionConfigProvider
 import com.crm.v2.domain.model.User
 import com.crm.v2.domain.usecase.auth.LoginUseCase
 import com.crm.v2.domain.usecase.auth.LogoutUseCase
@@ -27,6 +28,7 @@ data class LoginUiState(
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val logoutUseCase: LogoutUseCase,
+    private val extensionConfigProvider: ExtensionConfigProvider,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -68,6 +70,11 @@ class LoginViewModel @Inject constructor(
             val uuid = UUID.randomUUID().toString()
             when (val result = loginUseCase(state.username, state.password, uuid)) {
                 is Resource.Success -> {
+                    val empCode = result.data?.key?.toIntOrNull() ?: 0
+                    if (empCode > 0) {
+                        extensionConfigProvider.fetchAndApplyExtension(empCode)
+                        extensionConfigProvider.markAsNewDialer(empCode)
+                    }
                     _uiState.update { it.copy(isLoading = false) }
                     _events.send(Event.NavigateAndClear("dashboard"))
                 }

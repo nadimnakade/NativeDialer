@@ -1,7 +1,9 @@
 package com.crm.v2.common.constants
 
+import com.crm.v2.data.config.CloudConnectConfig
+
 object ApiConstants {
-    const val API_BASE_URL = "https://1up.co.in/DialerAPI/api/"
+    const val API_BASE_URL = "https://1up.co.in/NEXUS_API/api/"
     const val DIALER_WS_URL = "http://160.250.28.172:5031/Dialer_WS/"
 
     const val CONNECT_TIMEOUT_SECONDS = 30L
@@ -35,8 +37,9 @@ object ApiConstants {
         const val GET_NOT_UPDATED = "Pickup/GetDialerNotUpdatedData"
         const val UPDATE_STATUS = "Pickup/UpdateDialingStatus"
         const val UPDATE = "Pickup/UpdateDialer"
-        const val INSERT_LEAD = "Pickup/InsertLeadInfo"
-        const val ADD_LEAD = "Pickup/AddLead"
+        const val INSERT_LEAD = "Pickup/AddLead"
+        const val ADD_LEAD = "Pickup/InsertLeadInfo"
+        const val ADD_LEAD_NEW = "Pickup/InsertLeadInfo_New"
         const val GET_LEAD = "Pickup/GetLead"
         const val MANAGE_LEAD = "Pickup/ManageLead"
         const val LEAD_COUNT = "Pickup/GetLeadCount"
@@ -76,18 +79,39 @@ object ApiConstants {
     }
 
     object CloudConnect {
-        const val BASE_URL = "https://crm2.cloud-connect.in/ccpl_api/v1.4/"
-        const val CLICK_2_CALL = "api/info/click2call"
-        const val TOKEN_ID = "varsvZnOX5Z7Ibd2"
-        const val EXTENSION_NUMBER = "701"
-        const val EXTENSION_PASSWORD = "b147a109a38e4d3137e7442e54dd0fd0"
+        var BASE_URL = "https://crm2.cloud-connect.in/ccpl_api/v1.4/"
+        var CLICK_2_CALL = "api/info/click2call"
+        var TOKEN_ID = "6JU4KMMIO6B1xzLt"
+        var EXTENSION_NUMBER = "802"
+        var EXTENSION_PASSWORD = "15e8e7c72ea16ca290930fd7c4db760b"
+
+        fun update(config: CloudConnectConfig) {
+            BASE_URL = config.baseUrl
+            CLICK_2_CALL = config.click2Call
+            TOKEN_ID = config.tokenId
+            EXTENSION_NUMBER = config.extensionNumber
+            EXTENSION_PASSWORD = config.extensionPassword
+        }
     }
 
     object Sip {
-        const val SERVER = "sip2.cloud-connect.in"
-        const val PORT = "7065"
-        const val USERNAME = "102724701"
-        const val PASSWORD = "Tejas@001"
-        const val REALM = "sip2.cloud-connect.in"
+        var SERVER = "sip2.cloud-connect.in"
+        var PORT = "7065"
+        var USERNAME = "102949802"
+        var PASSWORD = "Tejas@123"
+        var REALM = "sip2.cloud-connect.in"
+
+        fun update(config: CloudConnectConfig) {
+            SERVER = config.sipServer
+            PORT = config.sipPort
+            USERNAME = config.sipUsername
+            PASSWORD = config.sipPassword
+            REALM = config.sipRealm
+        }
+    }
+
+    fun updateFromConfig(config: CloudConnectConfig) {
+        CloudConnect.update(config)
+        Sip.update(config)
     }
 }

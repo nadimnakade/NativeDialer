@@ -24,7 +24,7 @@ class CloudConnectConfigProvider @Inject constructor(
 ) {
     companion object {
         private const val TAG = "CLOUD_CONNECT"
-        private const val CONFIG_URL = "https://1up.co.in/DialerAPI/cloudconnect.xml"
+        private const val CONFIG_URL = "https://1up.co.in/NEXUS_API/cloudconnect.xml"
         private const val PREFS_NAME = "cloud_connect_config"
         private const val KEY_SAVED = "config_saved"
     }

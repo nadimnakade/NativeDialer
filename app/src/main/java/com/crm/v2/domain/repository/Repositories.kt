@@ -13,6 +13,7 @@ interface LeadRepository {
     ): Resource<String>
     suspend fun getLeadCount(userKey: String, type: String?): Resource<LeadCount>
     suspend fun getFollowUpLeads(userKey: String, type: String?): Resource<List<DialerRecord>>
+    suspend fun getCallerData(userKey: String, type: String?, pageIndex: Int = 0): Resource<List<DialerRecord>>
     suspend fun updateLeadStatus(request: Map<String, String>): Resource<String>
 }
 
@@ -28,7 +29,15 @@ interface DialerRepository {
     suspend fun updateDialingStatus(key: String): Resource<String>
     suspend fun updateDialer(
         key: String, status: String, callbackDate: String?,
-        remarks: String?, userKey: String
+        callbackTime: String?, remarks: String?, userKey: String,
+        callDuration: String = "0@|0", callDate: String = "0",
+        isHllapbl: Int = 0, isCibilBad: Int = 0, isRealEstate: Int = 0,
+    ): Resource<String>
+    suspend fun insertLeadInfoNew(
+        clientName: String, contact: String, salary: String, company: String,
+        remarks: String, status: String, callbackDate: String, callbackTime: String,
+        callerDuration: String, callDateTime: String, userKey: String,
+        isHllapbl: Int, isCibilBad: Int, isRealEstate: Int,
     ): Resource<String>
     fun startAutoDial(userKey: String): Flow<List<DialerRecord>>
     suspend fun stopAutoDial()
@@ -84,4 +93,13 @@ interface ContactRepository {
     fun getDeviceContacts(): Flow<List<Contact>>
     fun searchContacts(query: String): Flow<List<Contact>>
     fun getCachedContacts(): Flow<List<Contact>>
+}
+
+interface SearchApplicationRepository {
+    suspend fun searchApplications(
+        userKey: String,
+        pageIndex: Int = 0,
+        pageSize: Int = 10,
+        search: String = "",
+    ): Resource<List<SearchApplication>>
 }

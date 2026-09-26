@@ -14,6 +14,7 @@ import javax.inject.Inject
 data class OneMinCallsUiState(
     val calls: List<CallLog> = emptyList(),
     val isLoading: Boolean = false,
+    val error: String? = null,
 )
 
 @HiltViewModel
@@ -24,6 +25,8 @@ class OneMinCallsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(OneMinCallsUiState())
     val uiState: StateFlow<OneMinCallsUiState> = _uiState.asStateFlow()
 
+    fun onErrorShown() { _uiState.update { it.copy(error = null) } }
+
     fun load() {
         val userKey = authDataStore.userKey ?: return
         viewModelScope.launch {
@@ -33,7 +36,7 @@ class OneMinCallsViewModel @Inject constructor(
                     val filtered = result.data.filter { it.duration >= 60 }
                     _uiState.update { it.copy(calls = filtered, isLoading = false) }
                 }
-                is Resource.Error -> _uiState.update { it.copy(isLoading = false) }
+                is Resource.Error -> _uiState.update { it.copy(error = result.message, isLoading = false) }
                 else -> {}
             }
         }

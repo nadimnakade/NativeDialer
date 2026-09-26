@@ -22,6 +22,7 @@ import com.crm.v2.telephony.TelephonyManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -173,6 +174,21 @@ class PjsipTelephonyProvider @Inject constructor(
     override suspend fun call(number: String) {
         if (!isInitialized) {
             _events.tryEmit(TelephonyEvent.Error("Not registered"))
+            return
+        }
+
+        // SIP registration is async (onRegState). Auto-dialer happens to wait
+        // (network queue load), but manual/followup/1Min calls fire immediately
+        // after register(). Wait for real registration before making the call.
+        val timeoutMs = 30_000L
+        val started = System.currentTimeMillis()
+        while (!_registrationState.value && System.currentTimeMillis() - started < timeoutMs) {
+            ApiLogger.event(TAG, "Waiting for SIP registration before call...")
+            delay(200)
+        }
+        if (!_registrationState.value) {
+            _events.tryEmit(TelephonyEvent.Error("SIP registration timeout — call not placed"))
+            ApiLogger.error(TAG, "SIP registration timeout before call")
             return
         }
 

@@ -1,4 +1,4 @@
-package com.crm.v2.presentation
+﻿package com.crm.v2.presentation
 
 import android.Manifest
 import android.content.Intent
@@ -20,11 +20,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
@@ -35,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.crm.v2.data.config.ExtensionConfigProvider
 import com.crm.v2.data.datastore.AuthDataStore
 import com.crm.v2.presentation.navigation.NavGraph
 import com.crm.v2.presentation.navigation.Screen
@@ -46,6 +50,7 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject lateinit var authDataStore: AuthDataStore
+    @Inject lateinit var extensionConfigProvider: ExtensionConfigProvider
 
     private var permissionTick by mutableIntStateOf(0)
 
@@ -55,7 +60,6 @@ class MainActivity : ComponentActivity() {
         Manifest.permission.READ_PHONE_STATE,
     )
 
-    // Optional permissions - remove POST_NOTIFICATIONS for API < 33
     private val optionalPermissions: Array<String>
         get() {
             val perms = mutableListOf(
@@ -64,7 +68,6 @@ class MainActivity : ComponentActivity() {
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
             )
-            // POST_NOTIFICATIONS requires API 33+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 perms.add(Manifest.permission.POST_NOTIFICATIONS)
             }
@@ -113,9 +116,20 @@ class MainActivity : ComponentActivity() {
             CrmTheme {
                 val tick = permissionTick
                 val criticalOk = tick >= 0 && criticalGranted()
+                val extStatus by extensionConfigProvider.extensionStatus.collectAsState()
 
                 if (criticalOk) {
                     NavGraph(startDestination = startDestination)
+
+                    if (authDataStore.isLoggedIn && extStatus.isLoaded && !extStatus.isActive) {
+                        ExtensionInactiveDialog(
+                            message = extStatus.errorMessage ?: "Extension deactivated. Contact admin.",
+                            onConfirm = {
+                                authDataStore.clear()
+                                finish()
+                            }
+                        )
+                    }
                 } else {
                     PermissionScreen(
                         onRequestPermissions = { launchCriticalPermissions() },
@@ -174,6 +188,24 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
+private fun ExtensionInactiveDialog(
+    message: String,
+    onConfirm: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = { },
+        title = { Text("Extension Deactivated") },
+        text = { Text(message) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("OK")
+            }
+        },
+        dismissButton = null,
+    )
+}
+
+@Composable
 private fun PermissionScreen(
     onRequestPermissions: () -> Unit,
     onOpenSettings: () -> Unit
@@ -196,15 +228,15 @@ private fun PermissionScreen(
 
         val permissionText = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             "To make calls, this app needs:\n\n" +
-                    "• Microphone (audio during calls)\n" +
-                    "• Phone (make/manage calls)\n" +
-                    "• Phone state (identify call status)\n" +
-                    "• Notifications (call notifications)"
+                    "  Microphone (audio during calls)\n" +
+                    "  Phone (make/manage calls)\n" +
+                    "  Phone state (identify call status)\n" +
+                    "  Notifications (call notifications)"
         } else {
             "To make calls, this app needs:\n\n" +
-                    "• Microphone (audio during calls)\n" +
-                    "• Phone (make/manage calls)\n" +
-                    "• Phone state (identify call status)"
+                    "  Microphone (audio during calls)\n" +
+                    "  Phone (make/manage calls)\n" +
+                    "  Phone state (identify call status)"
         }
 
         Text(

@@ -11,9 +11,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.crm.v2.domain.model.AttendanceData
 import com.crm.v2.domain.model.LiveCount
@@ -34,6 +36,8 @@ fun ReportsScreen(
     )
     val snackbarHostState = remember { SnackbarHostState() }
 
+    LaunchedEffect(Unit) { viewModel.setActiveTab(0) }
+
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
             snackbarHostState.showSnackbar(it, duration = SnackbarDuration.Short)
@@ -46,8 +50,8 @@ fun ReportsScreen(
             SnackbarHost(snackbarHostState) { data ->
                 Snackbar(
                     snackbarData = data,
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                    containerColor = Color(0xFFFEE2E2),
+                    contentColor = Color(0xFFDC2626),
                 )
             }
         },
@@ -56,25 +60,12 @@ fun ReportsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(MaterialTheme.colorScheme.background),
+                .background(Color(0xFFF8FAFC)),
         ) {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Reports",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                ),
-            )
-
             ScrollableTabRow(
                 selectedTabIndex = uiState.activeTab,
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.primary,
+                containerColor = Color.White,
+                contentColor = Color(0xFFDE3121),
                 divider = {},
                 edgePadding = 16.dp,
             ) {
@@ -91,11 +82,13 @@ fun ReportsScreen(
                                     tab.icon,
                                     contentDescription = tab.title,
                                     modifier = Modifier.size(18.dp),
+                                    tint = if (uiState.activeTab == index) Color(0xFFDE3121) else Color(0xFF94A3B8),
                                 )
                                 Text(
                                     tab.title,
                                     fontWeight = if (uiState.activeTab == index) FontWeight.SemiBold else FontWeight.Normal,
                                     style = MaterialTheme.typography.labelLarge,
+                                    color = if (uiState.activeTab == index) Color(0xFFDE3121) else Color(0xFF64748B),
                                 )
                             }
                         },
@@ -103,13 +96,22 @@ fun ReportsScreen(
                 }
             }
 
-            if (uiState.isLoading) {
-                CrmLoading()
-            } else {
-                when (uiState.activeTab) {
-                    0 -> PerformanceTab(data = uiState.performance)
-                    1 -> AttendanceTab(data = uiState.attendance)
-                    2 -> LiveCountTab(data = uiState.dialerLive)
+            when (uiState.activeTab) {
+                0 -> {
+                    if (uiState.isLoadingPerformance) CrmLoading()
+                    else PerformanceTab(data = uiState.performance)
+                }
+                1 -> {
+                    if (uiState.isLoadingAttendance) CrmLoading()
+                    else AttendanceTab(data = uiState.attendance)
+                }
+                2 -> {
+                    if (uiState.isLoadingLiveCount) CrmLoading()
+                    else LiveCountTab(
+                        data = uiState.dialerLive,
+                        isAutoRefreshing = uiState.isAutoRefreshing,
+                        nextRefreshInSeconds = uiState.nextRefreshInSeconds,
+                    )
                 }
             }
         }
@@ -212,7 +214,11 @@ private fun AttendanceTab(data: AttendanceData) {
 }
 
 @Composable
-private fun LiveCountTab(data: LiveCount) {
+private fun LiveCountTab(
+    data: LiveCount,
+    isAutoRefreshing: Boolean,
+    nextRefreshInSeconds: Int,
+) {
     val callStats = listOf(
         "Total" to data.totalCount.toString(),
         "Connected" to data.interested.toString(),
@@ -231,12 +237,44 @@ private fun LiveCountTab(data: LiveCount) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
+        // Auto-refresh indicator
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF6FF)),
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp).fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                if (isAutoRefreshing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = Color(0xFF2563EB),
+                    )
+                } else {
+                    Icon(
+                        Icons.Filled.Refresh,
+                        contentDescription = null,
+                        tint = Color(0xFF2563EB),
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+                Text(
+                    text = if (isAutoRefreshing) "Refreshing..." else "Auto-refresh in ${nextRefreshInSeconds}s",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF2563EB),
+                    fontWeight = FontWeight.Medium,
+                )
+            }
+        }
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-            ),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFDE3121).copy(alpha = 0.08f)),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -267,9 +305,7 @@ private fun LiveCountTab(data: LiveCount) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -286,23 +322,23 @@ private fun LiveCountTab(data: LiveCount) {
                         "\u20B9${data.totalLoginAmt.toInt()}",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = Color(0xFFDE3121),
                     )
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-                HorizontalDivider()
+                HorizontalDivider(color = Color(0xFFE2E8F0))
                 Spacer(modifier = Modifier.height(10.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Total Disbursed", style = MaterialTheme.typography.bodyMedium)
+                    Text("Disbursed", style = MaterialTheme.typography.bodyMedium)
                     Text(
                         "\u20B9${data.totalDisbursedAmt.toInt()}",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = Color(0xFFDE3121),
                     )
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-                HorizontalDivider()
+                HorizontalDivider(color = Color(0xFFE2E8F0))
                 Spacer(modifier = Modifier.height(10.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("Duration", style = MaterialTheme.typography.bodyMedium)
@@ -310,7 +346,7 @@ private fun LiveCountTab(data: LiveCount) {
                         data.duration,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = Color(0xFFDE3121),
                     )
                 }
             }

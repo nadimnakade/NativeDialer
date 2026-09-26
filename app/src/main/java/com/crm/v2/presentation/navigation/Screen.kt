@@ -48,4 +48,6 @@ sealed class Screen(val route: String) {
     data object AgentStatus : Screen("agent_status")
     data object Whistleblower : Screen("whistleblower")
     data object Payslip : Screen("payslip")
+    data object Search : Screen("search")
+    data object SearchApplication : Screen("search_application")
 }

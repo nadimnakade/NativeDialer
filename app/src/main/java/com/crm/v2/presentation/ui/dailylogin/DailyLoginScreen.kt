@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -59,6 +60,16 @@ private fun DailyLoginForm(uiState: DailyLoginUiState, viewModel: DailyLoginView
         OutlinedTextField(value = uiState.remarks, onValueChange = { viewModel.onFieldChange("remarks", it) }, label = { Text("Remarks") }, modifier = Modifier.fillMaxWidth(), minLines = 2)
 
         uiState.error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+
+        if (uiState.isSuccess) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            ) {
+                Text("Daily login saved successfully", modifier = Modifier.padding(12.dp), color = MaterialTheme.colorScheme.onPrimaryContainer, style = MaterialTheme.typography.bodySmall)
+            }
+        }
 
         Button(
             onClick = viewModel::submit,

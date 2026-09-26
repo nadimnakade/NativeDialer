@@ -1,12 +1,20 @@
-package com.crm.v2
+﻿package com.crm.v2
 
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.crm.v2.data.config.CloudConnectConfigProvider
+import com.crm.v2.data.config.ExtensionConfigProvider
+import com.crm.v2.data.datastore.AuthDataStore
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -14,6 +22,17 @@ class CrmApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
+
+    @Inject
+    lateinit var cloudConnectConfigProvider: CloudConnectConfigProvider
+
+    @Inject
+    lateinit var extensionConfigProvider: ExtensionConfigProvider
+
+    @Inject
+    lateinit var authDataStore: AuthDataStore
+
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
@@ -24,10 +43,30 @@ class CrmApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannels()
+        loadCloudConnectConfig()
+    }
+
+    private fun loadCloudConnectConfig() {
+        applicationScope.launch {
+            try {
+                cloudConnectConfigProvider.fetchConfig()
+                Log.d("CLOUD_CONNECT", "XML config loaded at startup")
+
+                if (authDataStore.isLoggedIn) {
+                    val userKey = authDataStore.userKey?.toIntOrNull() ?: 0
+                    if (userKey > 0) {
+                        extensionConfigProvider.fetchAndApplyExtension(userKey)
+                        extensionConfigProvider.markAsNewDialer(userKey)
+                        Log.d("CLOUD_CONNECT", "Extension loaded for existing session: empCode=$userKey")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("CLOUD_CONNECT", "Failed to load config at startup: ${e.message}", e)
+            }
+        }
     }
 
     private fun createNotificationChannels() {
-        // Notification channels require API 26+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationManager = getSystemService(NotificationManager::class.java)
 

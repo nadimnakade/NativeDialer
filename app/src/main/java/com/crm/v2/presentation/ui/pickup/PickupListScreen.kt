@@ -4,15 +4,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.crm.v2.ui.theme.Secondary
 import com.crm.v2.domain.model.PickupEntry
 import com.crm.v2.presentation.ui.components.CrmEmptyState
 import com.crm.v2.presentation.ui.components.CrmLoading
@@ -26,6 +29,8 @@ fun PickupListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(Unit) { viewModel.loadPickups() }
+
     Column(modifier = Modifier.fillMaxSize()) {
         OutlinedTextField(
             value = uiState.searchQuery,
@@ -37,6 +42,16 @@ fun PickupListScreen(
             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
             singleLine = true,
         )
+
+        uiState.error?.let { error ->
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+            ) {
+                Text(error, modifier = Modifier.padding(12.dp), color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.bodySmall)
+            }
+        }
 
         if (uiState.isLoading) CrmLoading()
         else if (uiState.entries.isEmpty()) CrmEmptyState("No pickup entries found")
@@ -54,9 +69,9 @@ fun PickupListScreen(
             onClick = onAddPickup,
             modifier = Modifier
                 .padding(16.dp),
-            containerColor = MaterialTheme.colorScheme.primary,
+            containerColor = Secondary,
         ) {
-            Icon(Icons.Filled.Add, contentDescription = "Add Pickup")
+            Icon(Icons.Filled.Add, contentDescription = "Add Pickup", tint = Color.White)
         }
     }
 }

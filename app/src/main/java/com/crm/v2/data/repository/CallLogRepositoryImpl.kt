@@ -23,7 +23,10 @@ class CallLogRepositoryImpl @Inject constructor(
             val dtos = logs.map { it.toDto() }
             val response = pickupApi.saveCallLogsAll(dtos)
             if (response.isSuccessful) Resource.Success("Call logs saved")
-            else Resource.Error("Failed to save call logs")
+            else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to save call logs (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             // Save offline
             callLogDao.insertCallLogs(logs.map { it.toEntity() })
@@ -35,7 +38,10 @@ class CallLogRepositoryImpl @Inject constructor(
         return try {
             val response = pickupApi.saveCallLogIndv(log.toDto())
             if (response.isSuccessful) Resource.Success("Call log saved")
-            else Resource.Error("Failed to save call log")
+            else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to save call log (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             callLogDao.insertCallLog(log.toEntity())
             Resource.Error(e.message ?: "Network error", e)
@@ -58,7 +64,10 @@ class CallLogRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 callLogDao.markAsSynced(unsynced.map { it.id })
                 Resource.Success(unsynced.size)
-            } else Resource.Error("Sync failed")
+            } else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Sync failed (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }

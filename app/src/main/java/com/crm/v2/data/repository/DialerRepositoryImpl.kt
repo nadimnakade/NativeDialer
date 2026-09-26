@@ -44,8 +44,9 @@ class DialerRepositoryImpl @Inject constructor(
                 ApiLogger.event(TAG, "GetDialerData returned ${records.size} records")
                 Resource.Success(records)
             } else {
-                ApiLogger.error(TAG, "GetDialerData failed: ${response.code()} ${response.message()}")
-                Resource.Error("Failed to fetch dialer data: ${response.code()}")
+                val errBody = response.errorBody()?.string()
+                ApiLogger.error(TAG, "GetDialerData failed: ${response.code()} $errBody")
+                Resource.Error(errBody?.take(200) ?: "Failed to fetch dialer data (HTTP ${response.code()})")
             }
         } catch (e: Exception) {
             ApiLogger.error(TAG, "GetDialerData exception: ${e.message}", e)
@@ -79,8 +80,9 @@ class DialerRepositoryImpl @Inject constructor(
                 ApiLogger.event(TAG, "GetDialerNotUpdated returned ${records.size} records")
                 Resource.Success(records)
             } else {
-                ApiLogger.error(TAG, "GetDialerNotUpdated failed: ${response.code()}")
-                Resource.Error("Failed to fetch non-updated dialer data: ${response.code()}")
+                val errBody = response.errorBody()?.string()
+                ApiLogger.error(TAG, "GetDialerNotUpdated failed: ${response.code()} $errBody")
+                Resource.Error(errBody?.take(200) ?: "Failed to fetch non-updated dialer data (HTTP ${response.code()})")
             }
         } catch (e: Exception) {
             ApiLogger.error(TAG, "GetDialerNotUpdated exception: ${e.message}", e)
@@ -93,13 +95,19 @@ class DialerRepositoryImpl @Inject constructor(
         ApiLogger.request(TAG, "GET", url)
         return try {
             val response = pickupApi.updateDialingStatus(key)
-            ApiLogger.response(TAG, response.code(), url, response.body()?.toString())
+            val bodyStr = response.body()?.string()
+            ApiLogger.response(TAG, response.code(), url, bodyStr)
             if (response.isSuccessful) {
-                ApiLogger.event(TAG, "UpdateDialingStatus OK for key=$key")
-                Resource.Success("Status updated")
+                ApiLogger.event(TAG, "UpdateDialingStatus OK for key=$key body=$bodyStr")
+                if (bodyStr?.contains("Success", ignoreCase = true) == true) {
+                    Resource.Success("Status updated")
+                } else {
+                    Resource.Error("Update dialing status failed: $bodyStr")
+                }
             } else {
-                ApiLogger.error(TAG, "UpdateDialingStatus failed: ${response.code()}")
-                Resource.Error("Failed to update dialing status: ${response.code()}")
+                val errBody = response.errorBody()?.string() ?: bodyStr
+                ApiLogger.error(TAG, "UpdateDialingStatus failed: ${response.code()} $errBody")
+                Resource.Error(errBody?.take(200) ?: "Failed to update dialing status (HTTP ${response.code()})")
             }
         } catch (e: Exception) {
             ApiLogger.error(TAG, "UpdateDialingStatus exception: ${e.message}", e)
@@ -109,13 +117,16 @@ class DialerRepositoryImpl @Inject constructor(
 
     override suspend fun updateDialer(
         key: String, status: String, callbackDate: String?,
-        remarks: String?, userKey: String
+        callbackTime: String?, remarks: String?, userKey: String,
+        callDuration: String, callDate: String,
+        isHllapbl: Int, isCibilBad: Int, isRealEstate: Int,
     ): Resource<String> {
         val safeKey = key.toIntOrNull() ?: 0
         val safeUserKey = userKey.toIntOrNull() ?: 0
         val safeRemarks = remarks?.ifEmpty { "NA" } ?: "NA"
-        val safeCallbackDate = callbackDate ?: ""
-        val url = "Pickup/UpdateDialer?Key=$safeKey&Status=$status&Remarks=$safeRemarks&CallBackDate=$safeCallbackDate"
+        val safeCallbackDate = callbackDate ?: "01/01/0001"
+        val safeCallbackTime = callbackTime ?: "00:00:00"
+        val url = "Pickup/UpdateDialer?Key=$safeKey&Status=$status"
         ApiLogger.request(TAG, "GET", url)
         return try {
             val response = pickupApi.updateDialer(
@@ -123,25 +134,88 @@ class DialerRepositoryImpl @Inject constructor(
                 status = status,
                 remarks = safeRemarks,
                 callbackDate = safeCallbackDate,
-                callbackTime = "",
-                callDuration = "0@|0",
-                callDate = "0",
+                callbackTime = safeCallbackTime,
+                callDuration = callDuration,
+                callDate = callDate,
                 userKey = safeUserKey,
-                isHllapbl = 0,
-                isCibilBad = 0,
-                isRealEstate = 0,
+                isHllapbl = isHllapbl,
+                isCibilBad = isCibilBad,
+                isRealEstate = isRealEstate,
             )
             val bodyStr = response.body()?.string()
             ApiLogger.response(TAG, response.code(), url, bodyStr)
             if (response.isSuccessful) {
-                ApiLogger.event(TAG, "UpdateDialer OK: key=$key status=$status body=$bodyStr")
-                Resource.Success("Dialer updated")
+                if (bodyStr != null && bodyStr.contains("success", ignoreCase = true)) {
+                    ApiLogger.event(TAG, "UpdateDialer OK: key=$key status=$status")
+                    Resource.Success("Dialer updated")
+                } else {
+                    val cleaned = bodyStr?.trim()?.removeSurrounding("\"") ?: ""
+                    val retVal = cleaned.toIntOrNull()
+                    if (retVal != null && retVal > 0) {
+                        ApiLogger.event(TAG, "UpdateDialer OK (int): key=$key status=$status val=$retVal")
+                        Resource.Success("Dialer updated")
+                    } else {
+                        ApiLogger.error(TAG, "UpdateDialer no success in body: $bodyStr")
+                        Resource.Error("Update failed: $bodyStr")
+                    }
+                }
             } else {
-                ApiLogger.error(TAG, "UpdateDialer failed: ${response.code()} $bodyStr")
-                Resource.Error("Failed to update dialer: ${response.code()}")
+                val errBody = bodyStr ?: response.errorBody()?.string()
+                ApiLogger.error(TAG, "UpdateDialer failed: ${response.code()} $errBody")
+                Resource.Error(errBody?.take(200) ?: "Failed to update dialer (HTTP ${response.code()})")
             }
         } catch (e: Exception) {
             ApiLogger.error(TAG, "UpdateDialer exception: ${e.message}", e)
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+
+    override suspend fun insertLeadInfoNew(
+        clientName: String, contact: String, salary: String, company: String,
+        remarks: String, status: String, callbackDate: String, callbackTime: String,
+        callerDuration: String, callDateTime: String, userKey: String,
+        isHllapbl: Int, isCibilBad: Int, isRealEstate: Int,
+    ): Resource<String> {
+        val safeCallbackDate = callbackDate.ifEmpty { "01/01/0001" }
+        val safeCallbackTime = callbackTime.ifEmpty { "00:00:00" }
+        return try {
+            val response = pickupApi.addLeadNew(
+                clientName = clientName,
+                contact = contact,
+                salary = salary,
+                company = company,
+                remarks = remarks,
+                status = status,
+                callbackDate = safeCallbackDate,
+                callbackTime = safeCallbackTime,
+                callerDuration = callerDuration,
+                callDateTime = callDateTime,
+                userKey = userKey,
+                isHllapbl = isHllapbl,
+                isCibilBad = isCibilBad,
+                isRealEstate = isRealEstate,
+            )
+            val bodyStr = response.body()?.string()
+            ApiLogger.response(TAG, response.code(), "Pickup/InsertLeadInfo_New", bodyStr)
+            if (response.isSuccessful) {
+                if (bodyStr != null && bodyStr.contains("success", ignoreCase = true)) {
+                    Resource.Success("Lead created")
+                } else {
+                    val cleaned = bodyStr?.trim()?.removeSurrounding("\"") ?: ""
+                    val retVal = cleaned.toIntOrNull() ?: 0
+                    if (retVal > 0) {
+                        Resource.Success("Lead created")
+                    } else {
+                        Resource.Error("Insert failed: server returned $bodyStr")
+                    }
+                }
+            } else {
+                val errBody = bodyStr ?: response.errorBody()?.string()
+                ApiLogger.error(TAG, "InsertLeadInfo_New failed: ${response.code()} $errBody")
+                Resource.Error(errBody?.take(200) ?: "Failed to create lead (HTTP ${response.code()})")
+            }
+        } catch (e: Exception) {
+            ApiLogger.error(TAG, "InsertLeadInfo_New exception: ${e.message}", e)
             Resource.Error(e.message ?: "Network error", e)
         }
     }

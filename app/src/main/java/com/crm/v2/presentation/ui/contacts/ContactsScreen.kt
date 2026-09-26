@@ -4,25 +4,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.crm.v2.domain.model.Contact
-import com.crm.v2.presentation.ui.components.CrmLoading
-import com.crm.v2.presentation.ui.components.CrmEmptyState
+import com.crm.v2.common.util.maskPhone
+import com.crm.v2.presentation.ui.components.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactsScreen(
     onCall: (String) -> Unit,
@@ -30,119 +23,49 @@ fun ContactsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-    ) {
-        TopAppBar(
-            title = {
-                Text(
-                    "Contacts",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                )
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
-        )
-
+    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFF8FAFC))) {
         OutlinedTextField(
             value = uiState.searchQuery,
             onValueChange = viewModel::onSearchQueryChanged,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            placeholder = { Text("Search contacts...") },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            placeholder = { Text("Search contacts...", color = Color(0xFF94A3B8)) },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search", tint = Color(0xFF94A3B8)) },
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(14.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedBorderColor = Color(0xFFE2E8F0),
+                focusedBorderColor = Color(0xFFDE3121),
+                unfocusedContainerColor = Color.White,
+                focusedContainerColor = Color.White,
+                cursorColor = Color(0xFFDE3121),
             ),
         )
 
-        if (uiState.isLoading) {
-            CrmLoading()
-        } else if (uiState.contacts.isEmpty()) {
-            CrmEmptyState("No contacts found")
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+        uiState.error?.let { error ->
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFEE2E2)),
             ) {
-                items(uiState.contacts, key = { it.id ?: it.name ?: "" }) { contact ->
-                    ContactCard(
-                        contact = contact,
-                        onCall = { contact.phoneNumbers.firstOrNull()?.let(onCall) },
-                    )
-                }
+                Text(error, modifier = Modifier.padding(12.dp), color = Color(0xFFDC2626), style = MaterialTheme.typography.bodySmall)
             }
         }
-    }
-}
 
-@Composable
-private fun ContactCard(contact: Contact, onCall: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(14.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+        PullRefreshListWrapper(
+            isRefreshing = uiState.isLoading,
+            onRefresh = { },
         ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    Icons.Filled.Person,
-                    contentDescription = null,
-                    modifier = Modifier.size(22.dp),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-            }
-
-            Spacer(modifier = Modifier.width(14.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    contact.name ?: "Unknown",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                contact.phoneNumbers.firstOrNull()?.let { number ->
-                    Text(
-                        number,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+            when {
+                uiState.contacts.isEmpty() -> CrmEmptyState("No contacts found")
+                else -> LazyColumn {
+                    items(uiState.contacts, key = { it.id ?: it.name ?: "" }) { contact ->
+                        ClientListItem(
+                            name = contact.name ?: "Unknown",
+                            phone = contact.phoneNumbers.firstOrNull()?.maskPhone() ?: "",
+                            onCall = { contact.phoneNumbers.firstOrNull()?.let(onCall) },
+                        )
+                    }
                 }
-            }
-
-            FilledTonalButton(
-                onClick = onCall,
-                contentPadding = PaddingValues(horizontal = 12.dp),
-                shape = RoundedCornerShape(10.dp),
-            ) {
-                Icon(
-                    Icons.Filled.Call,
-                    contentDescription = "Call",
-                    modifier = Modifier.size(18.dp),
-                )
             }
         }
     }

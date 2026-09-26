@@ -25,8 +25,8 @@ class LeadRepositoryImpl @Inject constructor(
                 leadDao.insertLeads(leads.map { it.toEntity() })
                 Resource.Success(leads)
             } else {
-                val cached = leadDao.getLeads(userKey)
-                Resource.Error("Failed to fetch leads")
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to fetch leads (HTTP ${response.code()})")
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
@@ -41,7 +41,8 @@ class LeadRepositoryImpl @Inject constructor(
                 lead?.let { Resource.Success(it) }
                     ?: Resource.Error("Lead not found")
             } else {
-                Resource.Error("Failed to fetch lead detail")
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to fetch lead detail (HTTP ${response.code()})")
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
@@ -54,19 +55,26 @@ class LeadRepositoryImpl @Inject constructor(
     ): Resource<String> {
         return try {
             val response = pickupApi.addLead(
-                mapOf(
-                    "Name" to name,
-                    "MobileNo" to mobileNo,
-                    "Product" to product,
-                    "CallerID" to (callerId ?: ""),
-                    "Remarks" to (remarks ?: ""),
-                    "UserKey" to userKey,
-                )
+                clientName = name,
+                contact = mobileNo,
+                salary = "",
+                company = " ",
+                remarks = remarks ?: "",
+                status = "",
+                callbackDate = "",
+                callbackTime = "",
+                callerDuration = "",
+                callDateTime = "",
+                userKey = userKey,
+                isHllapbl = 0,
+                isCibilBad = 0,
+                isRealEstate = 0,
             )
             if (response.isSuccessful) {
                 Resource.Success("Lead created successfully")
             } else {
-                Resource.Error("Failed to create lead")
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to create lead (HTTP ${response.code()})")
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
@@ -85,7 +93,10 @@ class LeadRepositoryImpl @Inject constructor(
                         total = count?.total ?: 0,
                     )
                 )
-            } else Resource.Error("Failed to get lead count")
+            } else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to get lead count (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }
@@ -97,7 +108,25 @@ class LeadRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 val leads = response.body()?.map { it.toDialerDomain() } ?: emptyList()
                 Resource.Success(leads)
-            } else Resource.Error("Failed to fetch follow-up leads")
+            } else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to fetch follow-up leads (HTTP ${response.code()})")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+
+    override suspend fun getCallerData(userKey: String, type: String?, pageIndex: Int): Resource<List<com.crm.v2.domain.model.DialerRecord>> {
+        return try {
+            val response = pickupApi.getCallerData(userKey, type, pageIndex)
+            if (response.isSuccessful) {
+                val leads = response.body()?.map { it.toDialerDomain() } ?: emptyList()
+                Resource.Success(leads)
+            } else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to fetch caller data (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }
@@ -108,7 +137,10 @@ class LeadRepositoryImpl @Inject constructor(
             val response = pickupApi.manageLead(request)
             if (response.isSuccessful) {
                 Resource.Success("Status updated")
-            } else Resource.Error("Failed to update status")
+            } else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to update status (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }

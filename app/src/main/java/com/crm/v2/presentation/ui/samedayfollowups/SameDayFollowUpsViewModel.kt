@@ -14,6 +14,7 @@ import javax.inject.Inject
 data class SameDayFollowUpsUiState(
     val leads: List<DialerRecord> = emptyList(),
     val isLoading: Boolean = false,
+    val error: String? = null,
 )
 
 @HiltViewModel
@@ -24,16 +25,21 @@ class SameDayFollowUpsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SameDayFollowUpsUiState())
     val uiState: StateFlow<SameDayFollowUpsUiState> = _uiState.asStateFlow()
 
+    fun onErrorShown() { _uiState.update { it.copy(error = null) } }
+
     fun load() {
         val userKey = authDataStore.userKey ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             dialerRepository.getDialerNotUpdated(userKey).let { result ->
-                val filtered = when (result) {
-                    is Resource.Success -> result.data.filter { it.status == "SAME_DAY_FOLLOW_UP" || it.status == "1" }
-                    else -> emptyList()
+                when (result) {
+                    is Resource.Success -> {
+                        val filtered = result.data.filter { it.status == "SameDay Follow Up" || it.status == "SF" || it.status == "1" }
+                        _uiState.update { it.copy(leads = filtered, isLoading = false) }
+                    }
+                    is Resource.Error -> _uiState.update { it.copy(error = result.message, isLoading = false) }
+                    else -> {}
                 }
-                _uiState.update { it.copy(leads = filtered, isLoading = false) }
             }
         }
     }

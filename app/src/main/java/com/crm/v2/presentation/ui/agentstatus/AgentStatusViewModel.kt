@@ -14,6 +14,7 @@ import javax.inject.Inject
 data class AgentStatusUiState(
     val agents: List<CallLog> = emptyList(),
     val isLoading: Boolean = false,
+    val error: String? = null,
 )
 
 @HiltViewModel
@@ -25,13 +26,15 @@ class AgentStatusViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AgentStatusUiState())
     val uiState: StateFlow<AgentStatusUiState> = _uiState.asStateFlow()
 
+    fun onErrorShown() { _uiState.update { it.copy(error = null) } }
+
     fun load() {
         val userKey = authDataStore.userKey ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             when (val result = reportingRepository.getTeamCallLog(userKey)) {
                 is Resource.Success -> _uiState.update { it.copy(agents = result.data, isLoading = false) }
-                is Resource.Error -> _uiState.update { it.copy(isLoading = false) }
+                is Resource.Error -> _uiState.update { it.copy(error = result.message, isLoading = false) }
                 else -> {}
             }
         }

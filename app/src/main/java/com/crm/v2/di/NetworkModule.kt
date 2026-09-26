@@ -104,7 +104,7 @@ object NetworkModule {
     @Named("search")
     fun provideSearchApplicationRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://1up.co.in/dialerapi/")
+            .baseUrl("https://1up.co.in/NEXUS_API/")
             .client(okHttpClient)
             .build()
     }

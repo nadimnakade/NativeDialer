@@ -22,4 +22,5 @@ abstract class RepositoryModule {
     @Binds @Singleton abstract fun bindPickupRepository(impl: PickupRepositoryImpl): PickupRepository
     @Binds @Singleton abstract fun bindContactRepository(impl: ContactRepositoryImpl): ContactRepository
     @Binds @Singleton abstract fun bindSettingsRepository(impl: SettingsRepositoryImpl): SettingsRepository
+    @Binds @Singleton abstract fun bindSearchApplicationRepository(impl: SearchApplicationRepositoryImpl): SearchApplicationRepository
 }

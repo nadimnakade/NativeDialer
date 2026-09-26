@@ -80,11 +80,51 @@ interface PickupApi {
         @Query("pageIndex") pageIndex: Int = 0,
     ): Response<List<LeadDto>>
 
-    @POST(ApiConstants.Dialer.INSERT_LEAD)
-    suspend fun insertLead(@Body request: InsertLeadRequest): Response<ResponseBody>
+    @GET(ApiConstants.Dialer.INSERT_LEAD)
+    suspend fun insertLead(
+        @Query("Name") name: String,
+        @Query("MobileNo") mobileNo: String,
+        @Query("Product") product: String,
+        @Query("CallerID") callerId: String,
+        @Query("Remarks") remarks: String,
+        @Query("UserKey") userKey: String,
+    ): Response<ResponseBody>
 
-    @POST(ApiConstants.Dialer.ADD_LEAD)
-    suspend fun addLead(@Body body: Map<String, String>): Response<ResponseBody>
+    @GET(ApiConstants.Dialer.ADD_LEAD)
+    suspend fun addLead(
+        @Query("CD_CLIENT_NAME") clientName: String,
+        @Query("CD_CONTACT") contact: String,
+        @Query("CD_SALARY") salary: String,
+        @Query("CD_COMPANY") company: String,
+        @Query("CD_REMARKS") remarks: String,
+        @Query("CD_STATUS") status: String,
+        @Query("CD_CALLBACK_DATE") callbackDate: String,
+        @Query("CD_CALLBACK_TIME") callbackTime: String,
+        @Query("CD_CALLER_DURATION") callerDuration: String,
+        @Query("CD_CALL_DATE_TIME") callDateTime: String,
+        @Query("UserKey") userKey: String,
+        @Query("IsHLLAPBL") isHllapbl: Int,
+        @Query("IsCibilBad") isCibilBad: Int,
+        @Query("IsRealEstate") isRealEstate: Int,
+    ): Response<ResponseBody>
+
+    @GET(ApiConstants.Dialer.ADD_LEAD_NEW)
+    suspend fun addLeadNew(
+        @Query("CD_CLIENT_NAME") clientName: String,
+        @Query("CD_CONTACT") contact: String,
+        @Query("CD_SALARY") salary: String,
+        @Query("CD_COMPANY") company: String,
+        @Query("CD_REMARKS") remarks: String,
+        @Query("CD_STATUS") status: String,
+        @Query("CD_CALLBACK_DATE") callbackDate: String,
+        @Query("CD_CALLBACK_TIME") callbackTime: String,
+        @Query("CD_CALLER_DURATION") callerDuration: String,
+        @Query("CD_CALL_DATE_TIME") callDateTime: String,
+        @Query("UserKey") userKey: String,
+        @Query("IsHLLAPBL") isHllapbl: Int,
+        @Query("IsCibilBad") isCibilBad: Int,
+        @Query("IsRealEstate") isRealEstate: Int,
+    ): Response<ResponseBody>
 
     @POST(ApiConstants.Dialer.MANAGE_LEAD)
     suspend fun manageLead(@Body body: Map<String, String>): Response<ResponseBody>
@@ -101,6 +141,13 @@ interface PickupApi {
         @Query("type") type: String? = null,
     ): Response<List<DialerDataDto>>
 
+    @GET("Pickup/GetCallerData")
+    suspend fun getCallerData(
+        @Query("userKey") userKey: String,
+        @Query("type") type: String? = null,
+        @Query("pageIndex") pageIndex: Int = 0,
+    ): Response<List<DialerDataDto>>
+
     // Call Logs
     @POST(ApiConstants.CallLog.SAVE)
     suspend fun saveCallLogs(@Body body: List<CallLogDto>): Response<ResponseBody>
@@ -112,11 +159,25 @@ interface PickupApi {
     suspend fun saveCallLogIndv(@Body body: CallLogDto): Response<ResponseBody>
 
     // Daily Login
-    @POST(ApiConstants.DailyLogin.INSERT)
-    suspend fun insertDailyLogin(@Body request: InsertDailyLoginRequest): Response<ResponseBody>
+    @GET(ApiConstants.DailyLogin.INSERT)
+    suspend fun insertDailyLogin(
+        @Query("Product") product: String,
+        @Query("Banks") banks: String,
+        @Query("LOSNo") losNo: String,
+        @Query("AppNo") appNo: String,
+        @Query("Region") region: String,
+        @Query("ClientName") clientName: String,
+        @Query("Contact") contact: String,
+        @Query("LoginAmt") loginAmt: String,
+        @Query("Remarks") remarks: String,
+        @Query("UserKey") userKey: String,
+    ): Response<ResponseBody>
 
     @GET(ApiConstants.DailyLogin.LIST)
-    suspend fun getDailyLoginList(@Query("userKey") userKey: String): Response<List<DailyLoginDto>>
+    suspend fun getDailyLoginList(
+        @Query("UserKey") userKey: String,
+        @Query("SearchText") searchText: String = "",
+    ): Response<List<DailyLoginDto>>
 
     // Documents
     @POST(ApiConstants.Documents.SAVE)

@@ -20,14 +20,16 @@ class DailyLoginRepositoryImpl @Inject constructor(
     ): Resource<String> {
         return try {
             val response = pickupApi.insertDailyLogin(
-                InsertDailyLoginRequest(
-                    clientName = clientName, mobileNo = mobileNo, banks = banks,
-                    product = product, region = region, losNo = losNo, appNo = appNo,
-                    loginAmt = loginAmt, remarks = remarks, userKey = userKey,
-                )
+                product = product, banks = banks, losNo = losNo,
+                appNo = appNo, region = region, clientName = clientName,
+                contact = mobileNo, loginAmt = loginAmt.toString(),
+                remarks = remarks ?: "", userKey = userKey,
             )
             if (response.isSuccessful) Resource.Success("Daily login saved")
-            else Resource.Error("Failed to save daily login")
+            else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to save daily login (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }
@@ -47,7 +49,10 @@ class DailyLoginRepositoryImpl @Inject constructor(
                     )
                 } ?: emptyList()
                 Resource.Success(list)
-            } else Resource.Error("Failed to load daily login list")
+            } else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to load daily login list (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }

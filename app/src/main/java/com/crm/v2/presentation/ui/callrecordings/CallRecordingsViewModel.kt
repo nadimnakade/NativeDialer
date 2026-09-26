@@ -14,6 +14,7 @@ import javax.inject.Inject
 data class CallRecordingsUiState(
     val recordings: List<Document> = emptyList(),
     val isLoading: Boolean = false,
+    val error: String? = null,
 )
 
 @HiltViewModel
@@ -25,6 +26,8 @@ class CallRecordingsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(CallRecordingsUiState())
     val uiState: StateFlow<CallRecordingsUiState> = _uiState.asStateFlow()
 
+    fun onErrorShown() { _uiState.update { it.copy(error = null) } }
+
     fun load() {
         val userKey = authDataStore.userKey ?: return
         viewModelScope.launch {
@@ -34,7 +37,7 @@ class CallRecordingsViewModel @Inject constructor(
                     val recordings = result.data.filter { d -> d.fileType?.contains("recording", ignoreCase = true) == true }
                     _uiState.update { it.copy(recordings = recordings, isLoading = false) }
                 }
-                is Resource.Error -> _uiState.update { it.copy(isLoading = false) }
+                is Resource.Error -> _uiState.update { it.copy(error = result.message, isLoading = false) }
                 else -> {}
             }
         }

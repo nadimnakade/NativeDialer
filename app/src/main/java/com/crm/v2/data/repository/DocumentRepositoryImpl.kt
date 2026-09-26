@@ -34,7 +34,10 @@ class DocumentRepositoryImpl @Inject constructor(
                 fileType = fileType.toRequestBody("text/plain".toMediaType()),
             )
             if (response.isSuccessful) Resource.Success("Document saved")
-            else Resource.Error("Failed to save document")
+            else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to save document (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }
@@ -48,7 +51,10 @@ class DocumentRepositoryImpl @Inject constructor(
                     ClientInfo(key = dto.key ?: "", name = dto.clientName, mobileNo = dto.mobileNo)
                 } ?: emptyList()
                 Resource.Success(clients)
-            } else Resource.Error("No clients found")
+            } else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "No clients found (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }
@@ -66,7 +72,10 @@ class DocumentRepositoryImpl @Inject constructor(
                     )
                 } ?: emptyList()
                 Resource.Success(docs)
-            } else Resource.Error("No documents found")
+            } else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "No documents found (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }
@@ -84,7 +93,10 @@ class DocumentRepositoryImpl @Inject constructor(
                 Resource.Success(allDocs.map { dto ->
                     Document(key = dto.key, clientName = dto.clientName, mobileNo = dto.mobileNo, fileName = dto.fileName, fileType = dto.fileType, fileData = dto.fileData)
                 })
-            } else Resource.Error("No payslips found")
+            } else {
+                val errBody = clients.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "No payslips found (HTTP ${clients.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }

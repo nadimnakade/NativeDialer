@@ -1,15 +1,15 @@
 package com.crm.v2.common.constants
 
 object StatusConstants {
-    const val NOT_INTERESTED = "NI"
-    const val FOLLOW_UP = "FU"
-    const val SAME_DAY_FOLLOW_UP = "SF"
-    const val RINGING = "R"
-    const val NOT_CONTACTABLE = "NC"
+    const val NOT_INTERESTED = "Not Interested"
+    const val FOLLOW_UP = "Follow Up"
+    const val SAME_DAY_FOLLOW_UP = "SameDay Follow Up"
+    const val RINGING = "Ringing"
+    const val NOT_CONTACTABLE = "Not Contactable"
     const val DND = "DND"
-    const val LEAD = "L"
-    const val WRONG_NO = "WN"
-    const val NOT_DOABLE = "ND"
+    const val LEAD = "Lead"
+    const val WRONG_NO = "Wrong No."
+    const val NOT_DOABLE = "Not Doable"
     const val CALL_BACK = "CB"
     const val INTERESTED = "I"
     const val BLANK = "B"

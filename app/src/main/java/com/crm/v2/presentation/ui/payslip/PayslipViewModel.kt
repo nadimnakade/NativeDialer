@@ -14,6 +14,7 @@ import javax.inject.Inject
 data class PayslipUiState(
     val slips: List<Document> = emptyList(),
     val isLoading: Boolean = false,
+    val error: String? = null,
 )
 
 @HiltViewModel
@@ -25,12 +26,14 @@ class PayslipViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(PayslipUiState())
     val uiState: StateFlow<PayslipUiState> = _uiState.asStateFlow()
 
+    fun onErrorShown() { _uiState.update { it.copy(error = null) } }
+
     fun load() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             when (val result = documentRepository.getPayslips(authDataStore.userKey ?: "")) {
                 is Resource.Success -> _uiState.update { it.copy(slips = result.data, isLoading = false) }
-                is Resource.Error -> _uiState.update { it.copy(isLoading = false) }
+                is Resource.Error -> _uiState.update { it.copy(error = result.message, isLoading = false) }
                 else -> {}
             }
         }

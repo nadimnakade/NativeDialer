@@ -488,8 +488,8 @@ class DialerViewModel @Inject constructor(
                     dialerRepository.insertLeadInfoNew(
                         clientName = clientName,
                         contact = mobileNo,
-                        salary = salary,
-                        company = company,
+                        salary = salary.ifBlank { "0" },
+                        company = company.ifBlank { "NA" },
                         remarks = remarks ?: "",
                         status = status,
                         callbackDate = callbackDate ?: "",

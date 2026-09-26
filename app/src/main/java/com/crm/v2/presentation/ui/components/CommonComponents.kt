@@ -215,30 +215,19 @@ fun StatusBadge(
     modifier: Modifier = Modifier,
 ) {
     val containerColor = when (status) {
-        "FU" -> MaterialTheme.colorScheme.primaryContainer
-        "SF" -> MaterialTheme.colorScheme.tertiaryContainer
-        "R", "NC", "DND", "NI", "WN", "ND" -> MaterialTheme.colorScheme.errorContainer
-        "L" -> MaterialTheme.colorScheme.primaryContainer
+        "Follow Up" -> MaterialTheme.colorScheme.primaryContainer
+        "SameDay Follow Up" -> MaterialTheme.colorScheme.tertiaryContainer
+        "Ringing", "Not Contactable", "DND", "Not Interested", "Wrong No.", "Not Doable" -> MaterialTheme.colorScheme.errorContainer
+        "Lead" -> MaterialTheme.colorScheme.primaryContainer
         else -> MaterialTheme.colorScheme.surfaceVariant
     }
     val contentColor = when (status) {
-        "FU", "L" -> MaterialTheme.colorScheme.onPrimaryContainer
-        "SF" -> MaterialTheme.colorScheme.onTertiaryContainer
-        "R", "NC", "DND", "NI", "WN", "ND" -> MaterialTheme.colorScheme.onErrorContainer
+        "Follow Up", "Lead" -> MaterialTheme.colorScheme.onPrimaryContainer
+        "SameDay Follow Up" -> MaterialTheme.colorScheme.onTertiaryContainer
+        "Ringing", "Not Contactable", "DND", "Not Interested", "Wrong No.", "Not Doable" -> MaterialTheme.colorScheme.onErrorContainer
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
-    val label = when (status) {
-        "NI" -> "Not Interested"
-        "FU" -> "Follow Up"
-        "SF" -> "SameDay FU"
-        "R" -> "Ringing"
-        "NC" -> "Not Contactable"
-        "DND" -> "DND"
-        "L" -> "Lead"
-        "WN" -> "Wrong No."
-        "ND" -> "Not Doable"
-        else -> status
-    }
+    val label = status
 
     Surface(
         shape = MaterialTheme.shapes.small,

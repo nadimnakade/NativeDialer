@@ -21,7 +21,8 @@ class ReportingRepositoryImpl @Inject constructor(
                 val counters = response.body()
                 Resource.Success(aggregateDashboardCounters(counters ?: emptyList()))
             } else {
-                Resource.Error("Failed to load dashboard")
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to load dashboard (HTTP ${response.code()})")
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
@@ -36,7 +37,10 @@ class ReportingRepositoryImpl @Inject constructor(
                 val first = list?.firstOrNull()
                 first?.let { Resource.Success(it.toDomain()) }
                     ?: Resource.Error("Empty response")
-            } else Resource.Error("Failed to load live count")
+            } else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to load live count (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }
@@ -50,7 +54,10 @@ class ReportingRepositoryImpl @Inject constructor(
                 val first = list?.firstOrNull()
                 first?.let { Resource.Success(it.toDomain()) }
                     ?: Resource.Error("Empty response")
-            } else Resource.Error("Failed to load individual live count")
+            } else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to load individual live count (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }
@@ -62,7 +69,10 @@ class ReportingRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 val logs = response.body()?.map { it.toDomain() } ?: emptyList()
                 Resource.Success(logs)
-            } else Resource.Error("Failed to load team call log")
+            } else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to load team call log (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }
@@ -74,7 +84,10 @@ class ReportingRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 response.body()?.let { Resource.Success(it.toDomain()) }
                     ?: Resource.Error("Empty response")
-            } else Resource.Error("Failed to load attendance")
+            } else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to load attendance (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }
@@ -93,7 +106,10 @@ class ReportingRepositoryImpl @Inject constructor(
                     PerformanceData(key, value)
                 }
                 Resource.Success(data)
-            } else Resource.Error("Failed to load performance")
+            } else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to load performance (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }
@@ -123,7 +139,10 @@ class ReportingRepositoryImpl @Inject constructor(
                     }
                 }
                 Resource.Success(result)
-            } else Resource.Error("Failed to load applications")
+            } else {
+                val errBody = response.errorBody()?.string()
+                Resource.Error(errBody?.take(200) ?: "Failed to load applications (HTTP ${response.code()})")
+            }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error", e)
         }
@@ -139,8 +158,7 @@ private fun aggregateDashboardCounters(counters: List<DashboardCounterDto>): Das
     return DashboardData(
         rank = c.rank?.toIntOrNull() ?: 0,
         points = c.points?.toDoubleOrNull() ?: 0.0,
-        totalDisbursedAmt = c.totalDisbursedAmt?.toDoubleOrNull()
-            ?: c.disbursedAmt?.toDoubleOrNull() ?: 0.0,
+        totalDisbursedAmt = c.disbursedAmt?.toDoubleOrNull() ?: 0.0,
         clientConnectedFtd = c.clientConnected?.toIntOrNull() ?: 0,
         duration = c.duration ?: "00:00:00",
         dailyLeads = c.dailyLeadCount?.toIntOrNull() ?: 0,
@@ -162,7 +180,7 @@ private fun com.crm.v2.data.network.dto.pickup.DialerLiveDto.toDomain() = LiveCo
     interested = interested?.toIntOrNull() ?: 0,
     notContactable = notContactable?.toIntOrNull() ?: 0,
     ringing = ringing?.toIntOrNull() ?: 0,
-    totalCount = totalCount?.toIntOrNull() ?: 0,
+    totalCount = totalCount?.toIntOrNull() ?: total?.toIntOrNull() ?: 0,
     totalClientConnected = totalClientConnected?.toIntOrNull() ?: 0,
     duration = duration ?: "00:00:00",
     totalLoginAmt = totalLoginAmt?.toDoubleOrNull() ?: 0.0,

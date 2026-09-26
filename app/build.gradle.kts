@@ -17,11 +17,11 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.crm.v2"
+        applicationId = "io.uppro.dialer"
         minSdk = 24
         targetSdk = 33
-        versionCode = 1
-        versionName = "2.0.0"
+        versionCode = 10
+        versionName = "2.1.1"
 
         multiDexEnabled = true
         multiDexKeepFile = file("multidex_keep.pro")
@@ -29,7 +29,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
 
-        val apiBaseUrl = project.findProperty("API_BASE_URL") ?: "https://1up.co.in/DialerAPI/api/"
+        val apiBaseUrl = project.findProperty("API_BASE_URL") ?: "https://1up.co.in/NEXUS_API/api/"
         val cloudCallUrl = project.findProperty("CLOUD_CALL_URL") ?: "https://crm2.cloud-connect.in/ccpl_api/v1.4/api/info/click2call"
         val cloudTokenId = project.findProperty("CLOUD_TOKEN_ID") ?: "varsvZnOX5Z7Ibd2"
         val cloudExtensionNumber = project.findProperty("CLOUD_EXTENSION_NUMBER") ?: "701"
@@ -60,7 +60,7 @@ android {
         debug {
             isMinifyEnabled = false
             isDebuggable = true
-            applicationIdSuffix = ".debug"
+            applicationIdSuffix = ""
             versionNameSuffix = "-debug"
         }
         release {

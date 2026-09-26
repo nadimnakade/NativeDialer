@@ -147,7 +147,7 @@ fun ActiveCallScreen(
                 }
 
                 Text(
-                    text = number.maskPhone(),
+                    text = number,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,

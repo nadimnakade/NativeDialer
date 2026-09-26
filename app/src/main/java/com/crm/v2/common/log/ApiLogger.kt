@@ -21,8 +21,10 @@ object ApiLogger {
     fun response(tag: String, code: Int, url: String, body: String? = null) {
         Log.d(TAG, "[${ts()}] <<< $tag $code $url")
         if (body != null) {
-            val truncated = if (body.length > 500) body.substring(0, 500) + "... (${body.length} chars)" else body
-            Log.d(TAG, "[${ts()}] <<< BODY: $truncated")
+            val chunked = body.chunked(3000)
+            chunked.forEachIndexed { i, part ->
+                Log.d(TAG, "[${ts()}] <<< BODY[$i]: $part")
+            }
         }
     }
 

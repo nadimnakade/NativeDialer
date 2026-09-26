@@ -26,11 +26,13 @@ class SameDayFollowUpViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SameDayFollowUpUiState())
     val uiState: StateFlow<SameDayFollowUpUiState> = _uiState.asStateFlow()
 
+    fun onErrorShown() { _uiState.update { it.copy(error = null) } }
+
     fun load() {
         val userKey = authDataStore.userKey ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            when (val result = leadRepository.getFollowUpLeads(userKey, "SameDayFollowUp")) {
+            when (val result = leadRepository.getFollowUpLeads(userKey, "SF")) {
                 is Resource.Success -> _uiState.update { it.copy(leads = result.data, isLoading = false) }
                 is Resource.Error -> _uiState.update { it.copy(error = result.message, isLoading = false) }
                 else -> {}

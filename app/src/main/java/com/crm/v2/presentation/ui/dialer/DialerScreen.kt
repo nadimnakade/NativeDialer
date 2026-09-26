@@ -70,15 +70,23 @@ fun DialerScreen(
                             clientName = uiState.currentLead!!.clientName,
                             mobileNo = uiState.currentLead!!.contact,
                             callDuration = uiState.callDuration,
+                            callType = uiState.callType,
                             onSave = { state ->
                                 viewModel.submitStatus(
                                     key = uiState.currentLead!!.key,
                                     status = state.selectedStatus?.value ?: "",
-                                    callbackDate = if (state.callbackDate.isNotEmpty()) "${state.callbackDate} ${state.callbackTime}" else null,
+                                    callbackDate = if (state.callbackDate.isNotEmpty()) state.callbackDate else null,
+                                    callbackTime = if (state.callbackTime.isNotEmpty()) state.callbackTime else null,
                                     remarks = state.remarks,
                                     userKey = viewModel.getUserKey(),
                                     callDuration = uiState.callDuration,
-                                    isHLLAPBL = state.isHLLAPBL,
+                                    callDate = uiState.callDate,
+                                    callType = uiState.callType,
+                                    clientName = state.clientName,
+                                    mobileNo = uiState.currentLead!!.contact,
+                                    salary = state.salary,
+                                    company = state.company,
+                                    isHLLAPBL = if (state.isHLLAPBL.isNotEmpty()) 1 else 0,
                                     isCibilBad = state.isCibilBad,
                                     isRealEstate = state.isRealEstate,
                                 )
@@ -123,12 +131,13 @@ private fun DialerMainContent(
 ) {
     val tabs = listOf(
         TabItem("Auto", Icons.Filled.PlayArrow),
+        TabItem("Manual", Icons.Filled.Dialpad),
         TabItem("Lead", Icons.Filled.People),
         TabItem("Follow Up", Icons.Filled.FollowTheSigns),
+        TabItem("Same Day", Icons.Filled.EventRepeat),
         TabItem("Ringing", Icons.Filled.RingVolume),
         TabItem("+1 Min", Icons.Filled.Timer),
         TabItem("Contact", Icons.Filled.Contacts),
-        TabItem("Manual", Icons.Filled.Dialpad),
     )
 
     LaunchedEffect(Unit) {
@@ -142,6 +151,7 @@ private fun DialerMainContent(
                     "Dialer",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1E293B),
                 )
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -152,7 +162,7 @@ private fun DialerMainContent(
         ScrollableTabRow(
             selectedTabIndex = uiState.activeTab,
             containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.primary,
+            contentColor = Color(0xFF1E293B),
             divider = {},
             edgePadding = 16.dp,
         ) {
@@ -169,11 +179,13 @@ private fun DialerMainContent(
                                 tab.icon,
                                 contentDescription = tab.title,
                                 modifier = Modifier.size(18.dp),
+                                tint = if (uiState.activeTab == index) Color(0xFF1E293B) else Color(0xFF94A3B8)
                             )
                             Text(
                                 tab.title,
                                 fontWeight = if (uiState.activeTab == index) FontWeight.SemiBold else FontWeight.Normal,
                                 style = MaterialTheme.typography.labelLarge,
+                                color = if (uiState.activeTab == index) Color(0xFF1E293B) else Color(0xFF94A3B8)
                             )
                         }
                     },
@@ -189,37 +201,42 @@ private fun DialerMainContent(
                 onCallLead = { lead -> viewModel.callLead(lead) },
                 onRefresh = viewModel::refreshDialerQueue,
             )
-            1 -> LeadTab(
+            1 -> ManualDialTab(
+                phoneNumber = uiState.phoneNumber,
+                onNumberChanged = viewModel::onPhoneNumberChanged,
+                onClear = viewModel::clearManualNumber,
+                onCall = { number -> viewModel.callManualNumber(number) },
+            )
+            2 -> LeadTab(
                 uiState = uiState,
                 onCallLead = { lead -> viewModel.callLead(lead) },
                 onRefresh = viewModel::refreshLeads,
                 onLoadMore = { viewModel.loadLeads() },
             )
-            2 -> FollowUpDialerTab(
+            3 -> FollowUpDialerTab(
                 records = uiState.followUpRecords,
                 isLoading = uiState.isLoading,
                 onCall = { lead -> viewModel.callLead(lead) },
             )
-            3 -> RingingDialerTab(
+            4 -> SameDayDialerTab(
+                records = uiState.sameDayRecords,
+                isLoading = uiState.isLoading,
+                onCall = { lead -> viewModel.callLead(lead) },
+            )
+            5 -> RingingDialerTab(
                 records = uiState.ringingRecords,
                 isLoading = uiState.isLoading,
                 onCall = { lead -> viewModel.callLead(lead) },
             )
-            4 -> OneMinDialerTab(
+            6 -> OneMinDialerTab(
                 records = uiState.oneMinRecords,
                 isLoading = uiState.isLoading,
                 onCall = { lead -> viewModel.callLead(lead) },
             )
-            5 -> ContactTab(
+            7 -> ContactTab(
                 uiState = uiState,
                 onSearchChanged = viewModel::onContactSearchChanged,
                 onCallContact = { contact -> viewModel.callContact(contact) },
-            )
-            6 -> ManualDialTab(
-                phoneNumber = uiState.phoneNumber,
-                onNumberChanged = viewModel::onPhoneNumberChanged,
-                onClear = viewModel::clearManualNumber,
-                onCall = { number -> viewModel.callManualNumber(number) },
             )
         }
     }
@@ -248,6 +265,41 @@ private fun FollowUpDialerTab(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text("No follow-up records", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
+            }
+        }
+    } else {
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            items(records, key = { it.key }) { record ->
+                DialerRecordCard(record = record, onCall = { onCall(record) }, showCallbackDate = true)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SameDayDialerTab(
+    records: List<com.crm.v2.domain.model.DialerRecord>,
+    isLoading: Boolean,
+    onCall: (com.crm.v2.domain.model.DialerRecord) -> Unit,
+) {
+    if (isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(modifier = Modifier.size(32.dp))
+        }
+    } else if (records.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize().padding(48.dp), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    Icons.Filled.EventRepeat,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text("No same-day follow-up records", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
             }
         }
     } else {
@@ -609,11 +661,11 @@ private fun QueueLeadCard(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = if (isCurrent) CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+            containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f),
         ) else CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isCurrent) 2.dp else 0.5.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Row(
             modifier = Modifier
@@ -625,7 +677,7 @@ private fun QueueLeadCard(
                     .size(40.dp)
                     .clip(CircleShape)
                     .background(
-                        if (isCurrent) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                        if (isCurrent) MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
                         else MaterialTheme.colorScheme.surfaceVariant
                     ),
                 contentAlignment = Alignment.Center,
@@ -634,8 +686,8 @@ private fun QueueLeadCard(
                     lead.clientName.firstOrNull()?.uppercase() ?: "?",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = if (isCurrent) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (isCurrent) MaterialTheme.colorScheme.secondary
+                    else Color(0xFF64748B),
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
@@ -644,20 +696,21 @@ private fun QueueLeadCard(
                     lead.clientName,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1E293B),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     lead.contact.maskPhone(),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color(0xFF94A3B8),
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     lead.company?.let {
                         Text(
                             it,
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            color = Color(0xFF94A3B8),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -666,7 +719,7 @@ private fun QueueLeadCard(
                         Text(
                             "• $it",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            color = Color(0xFF94A3B8),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -676,21 +729,21 @@ private fun QueueLeadCard(
             if (isCurrent) {
                 Surface(
                     shape = MaterialTheme.shapes.extraSmall,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
                 ) {
                     Text(
                         "Active",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                 }
             } else {
                 Icon(
                     Icons.Filled.ChevronRight,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                    tint = Color(0xFFCBD5E1),
                     modifier = Modifier.size(20.dp),
                 )
             }
@@ -742,7 +795,8 @@ private fun LeadTab(
                         .fillMaxWidth()
                         .clickable { onCallLead(lead) },
                     shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 ) {
                     Row(
                         modifier = Modifier.padding(14.dp),
@@ -752,13 +806,13 @@ private fun LeadTab(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.tertiaryContainer),
+                                .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)),
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
                                 Icons.Filled.Person,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.tertiary,
+                                tint = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.size(20.dp),
                             )
                         }
@@ -768,26 +822,27 @@ private fun LeadTab(
                                 lead.clientName,
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF1E293B),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
                             Text(
                                 lead.contact.maskPhone(),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = Color(0xFF94A3B8),
                             )
                             lead.company?.let {
                                 Text(
                                     it,
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                    color = Color(0xFF94A3B8),
                                 )
                             }
                             lead.callbackDate?.let {
                                 Text(
                                     "Follow-up: $it",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.tertiary,
+                                    color = MaterialTheme.colorScheme.secondary,
                                     fontWeight = FontWeight.Medium,
                                 )
                             }
@@ -812,6 +867,10 @@ private fun LeadTab(
                             FilledTonalIconButton(
                                 onClick = { onCallLead(lead) },
                                 modifier = Modifier.size(36.dp),
+                                colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary,
+                                    contentColor = Color.White,
+                                ),
                             ) {
                                 Icon(Icons.Filled.Phone, contentDescription = "Call", modifier = Modifier.size(18.dp))
                             }

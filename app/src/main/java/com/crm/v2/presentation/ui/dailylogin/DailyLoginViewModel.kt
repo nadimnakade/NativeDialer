@@ -68,7 +68,13 @@ class DailyLoginViewModel @Inject constructor(
                 remarks = s.remarks.ifBlank { null },
                 userKey = authDataStore.userKey ?: "",
             )) {
-                is Resource.Success -> _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+                is Resource.Success -> _uiState.update {
+                    it.copy(
+                        isLoading = false, isSuccess = true,
+                        clientName = "", mobileNo = "", banks = "", product = "",
+                        region = "", losNo = "", appNo = "", loginAmount = "", remarks = "",
+                    )
+                }
                 is Resource.Error -> _uiState.update { it.copy(isLoading = false, error = result.message) }
                 else -> {}
             }
