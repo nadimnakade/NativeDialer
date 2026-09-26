@@ -4,13 +4,13 @@ Frontend/build/
 *.apk
 *.aar
 *.jar
-
+.bin
 # IDE
 .idea/
 *.iml
 .gradle/
 local.properties
-
+.gradle
 # OS
 .DS_Store
 Thumbs.db
@@ -36,3 +36,5 @@ publish/
 pjsip/
 mbedtls/
 Frontend/.git/
+*.gradle
+Frontend\.gradle\

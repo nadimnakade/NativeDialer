@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-    <!-- CloudConnect REST API Settings -->
     <baseUrl>https://crm2.cloud-connect.in/ccpl_api/v1.4/</baseUrl>
     <click2call>api/info/click2call</click2call>
     <tokenId>6JU4KMMIO6B1xzLt</tokenId>
-    <extensionNumber>801</extensionNumber>
+    <extensionNumber>802</extensionNumber>
     <extensionPassword>15e8e7c72ea16ca290930fd7c4db760b</extensionPassword>
-
-    <!-- SIP Settings -->
     <sipServer>sip2.cloud-connect.in</sipServer>
     <sipPort>7065</sipPort>
-    <sipUsername>102949801</sipUsername>
+    <sipUsername>102949802</sipUsername>
     <sipPassword>Tejas@123</sipPassword>
     <sipRealm>sip2.cloud-connect.in</sipRealm>
 </config>
