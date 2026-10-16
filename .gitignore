@@ -38,3 +38,8 @@ mbedtls/
 Frontend/.git/
 *.gradle
 Frontend\.gradle\
+
+# AI tooling artifacts
+.freebuff/
+.superpowers/
+graphify-out/

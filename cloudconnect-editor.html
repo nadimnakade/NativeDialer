@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudConnect Config Editor</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background: #f0f2f5;
+        min-height: 100vh;
+        padding: 24px;
+        color: #1a1a2e;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    header {
+        background: linear-gradient(135deg, #1a73e8, #174ea6);
+        color: #fff;
+        padding: 24px 28px;
+        border-radius: 12px 12px 0 0;
+    }
+    h1 { font-size: 22px; font-weight: 600; }
+    header p { opacity: .85; font-size: 13px; margin-top: 4px; }
+    main {
+        background: #fff;
+        border-radius: 0 0 12px 12px;
+        padding: 28px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+    fieldset {
+        border: none;
+        margin-bottom: 28px;
+    }
+    legend {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: #1a73e8;
+        margin-bottom: 14px;
+        padding-bottom: 6px;
+        border-bottom: 2px solid #e8eaed;
+        width: 100%;
+    }
+    .field { margin-bottom: 16px; }
+    label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 5px;
+    }
+    label .hint { font-weight: 400; color: #888; }
+    input[type=text] {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1.5px solid #dadce0;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: Consolas, monospace;
+        transition: border-color .15s;
+    }
+    input[type=text]:focus {
+        outline: none;
+        border-color: #1a73e8;
+    }
+    input.invalid { border-color: #d93025; background: #fdf7f7; }
+    .row { display: flex; gap: 16px; }
+    .row .field { flex: 1; }
+    .actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        padding-top: 20px;
+        border-top: 1px solid #e8eaed;
+    }
+    button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: filter .15s, transform .05s;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: scale(.98); }
+    #downloadBtn {
+        background: #1a73e8;
+        color: #fff;
+    }
+    #resetBtn {
+        background: #fff;
+        color: #d93025;
+        border: 1.5px solid #dadce0;
+    }
+    #loadBtn {
+        background: #fff;
+        color: #1a73e8;
+        border: 1.5px solid #dadce0;
+    }
+    #status {
+        font-size: 13px;
+        margin-left: auto;
+    }
+    #status.ok { color: #188038; }
+    #status.err { color: #d93025; }
+    details {
+        margin-top: 16px;
+        font-size: 13px;
+        color: #666;
+    }
+    summary { cursor: pointer; font-weight: 600; color: #444; }
+    details pre {
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin-top: 8px;
+        font-size: 12px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>CloudConnect Config Editor</h1>
+        <p>Edit values &rarr; Download &rarr; upload <code>cloudconnect.xml</code> to your server (1up.co.in/DialerAPI/)</p>
+    </header>
+    <main>
+        <fieldset>
+            <legend>Cloud Call API</legend>
+            <div class="field">
+                <label>Base URL <span class="hint">&mdash; CloudConnect API root</span></label>
+                <input type="text" id="baseUrl" data-tag="baseUrl">
+            </div>
+            <div class="row">
+                <div class="field">
+                    <label>Click2Call Path</label>
+                    <input type="text" id="click2call" data-tag="click2call">
+                </div>
+                <div class="field">
+                    <label>Token ID</label>
+                    <input type="text" id="tokenId" data-tag="tokenId">
+                </div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <label>Extension Number <span class="hint">&mdash; app reads this on startup</span></label>
+                    <input type="text" id="extensionNumber" data-tag="extensionNumber">
+                </div>
+                <div class="field">
+                    <label>Extension Password</label>
+                    <input type="text" id="extensionPassword" data-tag="extensionPassword">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>SIP / Telephony</legend>
+            <div class="row">
+                <div class="field">
+                    <label>SIP Server</label>
+                    <input type="text" id="sipServer" data-tag="sipServer">
+                </div>
+                <div class="field" style="max-width:140px;">
+                    <label>SIP Port</label>
+                    <input type="text" id="sipPort" data-tag="sipPort">
+                </div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <label>SIP Username <span class="hint">&mdash; app reads this on startup</span></label>
+                    <input type="text" id="sipUsername" data-tag="sipUsername">
+                </div>
+                <div class="field">
+                    <label>SIP Password</label>
+                    <input type="text" id="sipPassword" data-tag="sipPassword">
+                </div>
+            </div>
+            <div class="field">
+                <label>SIP Realm</label>
+                <input type="text" id="sipRealm" data-tag="sipRealm">
+            </div>
+        </fieldset>
+
+        <div class="actions">
+            <button id="downloadBtn">Download cloudconnect.xml</button>
+            <button id="loadBtn">Load from server</button>
+            <button id="resetBtn">Reset to last saved</button>
+            <span id="status"></span>
+        </div>
+
+        <details>
+            <summary>Preview XML output</summary>
+            <pre id="preview"></pre>
+        </details>
+    </main>
+</div>
+
+<script>
+(function () {
+    var DEFAULTS = {
+        baseUrl: "https://crm2.cloud-connect.in/ccpl_api/v1.4/",
+        click2call: "api/info/click2call",
+        tokenId: "6JU4KMMIO6B1xzLt",
+        extensionNumber: "802",
+        extensionPassword: "15e8e7c72ea16ca290930fd7c4db760b",
+        sipServer: "sip2.cloud-connect.in",
+        sipPort: "7065",
+        sipUsername: "102949802",
+        sipPassword: "Tejas@123",
+        sipRealm: "sip2.cloud-connect.in"
+    };
+
+    var FIELDS = Object.keys(DEFAULTS);
+    var statusEl = document.getElementById("status");
+    var previewEl = document.getElementById("preview");
+
+    function setStatus(msg, ok) {
+        statusEl.textContent = msg;
+        statusEl.className = ok ? "ok" : "err";
+        clearTimeout(setStatus._t);
+        setStatus._t = setTimeout(function () { statusEl.textContent = ""; }, 4000);
+    }
+
+    function fillValues(values) {
+        FIELDS.forEach(function (key) {
+            document.getElementById(key).value = values[key];
+        });
+        updatePreview();
+    }
+
+    function readValues() {
+        var out = {};
+        FIELDS.forEach(function (key) {
+            out[key] = document.getElementById(key).value.trim();
+        });
+        return out;
+    }
+
+    function escapeXml(s) {
+        return s.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function buildXml(v) {
+        var lines = ['<?xml version="1.0" encoding="UTF-8"?>', "<config>"];
+        FIELDS.forEach(function (key) {
+            lines.push("    <" + key + ">" + escapeXml(v[key]) + "</" + key + ">");
+        });
+        lines.push("</config>");
+        return lines.join("\n");
+    }
+
+    function updatePreview() {
+        previewEl.textContent = buildXml(readValues());
+    }
+
+    function validate() {
+        var v = readValues();
+        var bad = [];
+        ["extensionNumber", "sipUsername"].forEach(function (key) {
+            var el = document.getElementById(key);
+            el.classList.toggle("invalid", !v[key]);
+            if (!v[key]) bad.push(key);
+        });
+        if (bad.length) {
+            setStatus("Extension Number and SIP Username are required", false);
+            return null;
+        }
+        return v;
+    }
+
+    document.getElementById("downloadBtn").addEventListener("click", function () {
+        var v = validate();
+        if (!v) return;
+        var blob = new Blob([buildXml(v)], { type: "application/xml" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "cloudconnect.xml";
+        a.click();
+        URL.revokeObjectURL(a.href);
+        setStatus("Downloaded - now upload to 1up.co.in/DialerAPI/", true);
+    });
+
+    document.getElementById("loadBtn").addEventListener("click", function () {
+        fetch("https://1up.co.in/NEXUS_API/cloudconnect.xml", { cache: "no-store" })
+            .then(function (r) {
+                if (!r.ok) throw new Error("HTTP " + r.status);
+                return r.text();
+            })
+            .then(function (xml) {
+                var doc = new DOMParser().parseFromString(xml, "application/xml");
+                var vals = {};
+                FIELDS.forEach(function (key) {
+                    var node = doc.getElementsByTagName(key)[0];
+                    vals[key] = node ? node.textContent : DEFAULTS[key];
+                });
+                fillValues(vals);
+                setStatus("Loaded live config from server", true);
+            })
+            .catch(function () {
+                setStatus("Could not reach server (CORS/offline). Using saved values.", false);
+            });
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", function () {
+        fillValues(DEFAULTS);
+        setStatus("Reset to last known values", true);
+    });
+
+    document.querySelectorAll("input[type=text]").forEach(function (el) {
+        el.addEventListener("input", updatePreview);
+    });
+
+    fillValues(DEFAULTS);
+})();
+</script>
+</body>
+</html>
